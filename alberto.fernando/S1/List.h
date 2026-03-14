@@ -262,3 +262,28 @@ void insert(size_t index, const T& value) {
       atual->prev = novo;
       sz++;
     }
+Iter<T> insert(Iter<T> pos, const T& value) {
+      if (pos == begin()) { push_front(value); return begin(); }
+      if (pos == end()) { push_back(value); return Iter<T>(tail); }
+
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev;
+      Elem* novo = new Elem(value, atual, anterior);
+      anterior->next = novo;
+      atual->prev = novo;
+      sz++;
+      return Iter<T>(novo);
+    }
+
+    Iter<T> insert(Iter<T> pos, T&& value) {
+      if (pos == begin()) { push_front(std::move(value)); return begin(); }
+      if (pos == end()) { push_back(std::move(value)); return Iter<T>(tail); }
+
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev;
+      Elem* novo = new Elem(std::move(value), atual, anterior);
+      anterior->next = novo;
+      atual->prev = novo;
+      sz++;
+      return Iter<T>(novo);
+    }
