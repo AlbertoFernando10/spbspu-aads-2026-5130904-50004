@@ -333,3 +333,13 @@ void clear() {
       }
     }
   };
+template <class T>
+  inline void sum(T& a, const T& b) {
+    if (std::numeric_limits<T>::max() - b < a) {
+      throw std::overflow_error("Overflow");
+    }
+    a += b;
+  }
+}
+
+#endif
