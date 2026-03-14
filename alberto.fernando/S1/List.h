@@ -186,3 +186,51 @@ Iter<T> begin() noexcept { return Iter<T>(head); }
       }
       return curr->data;
     }
+void push_front(const T& value) {
+      Elem* novo = new Elem(value, head, nullptr);
+      if (empty()) tail = novo;
+      else head->prev = novo;
+      head = novo;
+      sz++;
+    }
+    void push_front(T&& value) {
+      Elem* novo = new Elem(std::move(value), head, nullptr);
+      if (empty()) tail = novo;
+      else head->prev = novo;
+      head = novo;
+      sz++;
+    }
+    void pop_front() {
+      if (empty()) return;
+      Elem* temp = head;
+      head = head->next;
+      if (head) head->prev = nullptr;
+      else tail = nullptr;
+      delete temp;
+      sz--;
+    }
+    void push_back(const T& value) {
+      Elem* novo = new Elem(value, nullptr, tail);
+      if (empty()) head = novo;
+      else tail->next = novo;
+      tail = novo;
+      sz++;
+    }
+
+    void push_back(T&& value) {
+      Elem* novo = new Elem(std::move(value), nullptr, tail);
+      if (empty()) head = novo;
+      else tail->next = novo;
+      tail = novo;
+      sz++;
+    }
+
+    void pop_back() {
+      if (empty()) return;
+      Elem* temp = tail;
+      tail = tail->prev;
+      if (tail) tail->next = nullptr;
+      else head = nullptr;
+      delete temp;
+      sz--;
+    }
