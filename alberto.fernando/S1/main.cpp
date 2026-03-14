@@ -25,3 +25,15 @@ std::string nome;
 
     std::cin.clear();
   }
+if (names.empty()) {
+    std::cout << "0\n";
+    return 0;
+  }
+
+  bool first = true;
+  for (auto it = names.cbegin(); it != names.cend(); ++it) {
+    if (!first) std::cout << " ";
+    std::cout << *it;
+    first = false;
+  }
+  std::cout << "\n";
