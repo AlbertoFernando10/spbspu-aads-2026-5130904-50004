@@ -319,3 +319,17 @@ void erase(size_t index) {
       sz--;
       return Iter<T>(proximo);
     }
+void clear() {
+      while (!empty()) pop_front();
+    }
+    void reverse() {
+      if (sz <= 1) return;
+      Elem* left = head;
+      Elem* right = tail;
+      for (size_t i = 0; i < sz / 2; ++i) {
+        std::swap(left->data, right->data);
+        left = left->next;
+        right = right->prev;
+      }
+    }
+  };
