@@ -287,3 +287,35 @@ Iter<T> insert(Iter<T> pos, const T& value) {
       sz++;
       return Iter<T>(novo);
     }
+void erase(size_t index) {
+      if (index >= sz) throw std::out_of_range("Invalid index");
+      if (index == 0) { pop_front(); return; }
+      if (index == sz - 1) { pop_back(); return; }
+
+      Elem* atual = head;
+      for (size_t i = 0; i < index; ++i) atual = atual->next;
+
+      Elem* anterior = atual->prev;
+      Elem* proximo = atual->next;
+      anterior->next = proximo;
+      proximo->prev = anterior;
+      delete atual;
+      sz--;
+    }
+
+    Iter<T> erase(Iter<T> pos) {
+      if (empty() || pos == end())
+        throw std::out_of_range("Invalid position");
+
+      if (pos == begin()) { pop_front(); return begin(); }
+      if (pos.ptr == tail) { pop_back(); return end(); }
+
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev;
+      Elem* proximo = atual->next;
+      anterior->next = proximo;
+      proximo->prev = anterior;
+      delete atual;
+      sz--;
+      return Iter<T>(proximo);
+    }
