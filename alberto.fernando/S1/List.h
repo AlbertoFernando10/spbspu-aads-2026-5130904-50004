@@ -53,7 +53,7 @@ namespace alberto {
     const T& operator*() const noexcept { return ptr->data; }
     const T* operator->() const noexcept { return &(ptr->data); }
     CIter& operator++() noexcept {
-      ptr = ptr->next
+      ptr = ptr->next;
       return *this;
     }
     CIter& operator--() noexcept {
