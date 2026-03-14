@@ -95,3 +95,47 @@ namespace alberto {
     Elem* head;
     Elem* tail;
     size_t sz;
+public:
+    List() noexcept : head(nullptr), tail(nullptr), sz(0) {}
+
+    ~List() { clear(); }
+
+    List(const List& other) : head(nullptr), tail(nullptr), sz(0) {
+      for (Elem* curr = other.head; curr != nullptr; curr = curr->next) {
+        push_back(curr->data);
+      }
+    }
+
+    List(List&& other) noexcept
+      : head(other.head), tail(other.tail), sz(other.sz) {
+      other.head = nullptr;
+      other.tail = nullptr;
+      other.sz = 0;
+    }
+
+    List& operator=(const List& other) {
+      if (this != &other) {
+        List tmp(other);
+        swap(tmp);
+      }
+      return *this;
+    }
+
+    List& operator=(List&& other) noexcept {
+      if (this != &other) {
+        clear();
+        head = other.head;
+        tail = other.tail;
+        sz = other.sz;
+        other.head = nullptr;
+        other.tail = nullptr;
+        other.sz = 0;
+      }
+      return *this;
+    }
+
+    void swap(List& other) noexcept {
+      std::swap(head, other.head);
+      std::swap(tail, other.tail);
+      std::swap(sz, other.sz);
+    }
