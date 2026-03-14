@@ -77,3 +77,21 @@ namespace alberto {
     const typename List<T>::Elem* ptr;
     explicit CIter(const typename List<T>::Elem* p) noexcept : ptr(p) {}
   };
+
+ template <class T>
+  class List {
+  public:
+    struct Elem {
+      T data;
+      Elem* next;
+      Elem* prev;
+      explicit Elem(const T& val, Elem* nxt = nullptr, Elem* prv = nullptr)
+        : data(val), next(nxt), prev(prv) {}
+      explicit Elem(T&& val, Elem* nxt = nullptr, Elem* prv = nullptr)
+        : data(std::move(val)), next(nxt), prev(prv) {}
+    };
+
+  private:
+    Elem* head;
+    Elem* tail;
+    size_t sz;
