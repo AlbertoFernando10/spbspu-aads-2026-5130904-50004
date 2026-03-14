@@ -139,3 +139,50 @@ public:
       std::swap(tail, other.tail);
       std::swap(sz, other.sz);
     }
+Iter<T> begin() noexcept { return Iter<T>(head); }
+    Iter<T> end() noexcept { return Iter<T>(nullptr); }
+    CIter<T> begin() const noexcept { return CIter<T>(head); }
+    CIter<T> end() const noexcept { return CIter<T>(nullptr); }
+    CIter<T> cbegin() const noexcept { return CIter<T>(head); }
+    CIter<T> cend() const noexcept { return CIter<T>(nullptr); }
+
+    bool empty() const noexcept { return sz == 0; }
+    size_t size() const noexcept { return sz; }
+
+    T& front() {
+      if (empty()) throw std::out_of_range("Empty list");
+      return head->data;
+    }
+
+    const T& front() const {
+      if (empty()) throw std::out_of_range("Empty list");
+      return head->data;
+    }
+
+    T& back() {
+      if (empty()) throw std::out_of_range("Empty list");
+      return tail->data;
+    }
+
+    const T& back() const {
+      if (empty()) throw std::out_of_range("Empty list");
+      return tail->data;
+    }
+
+    T& operator[](size_t index) {
+      if (index >= sz) throw std::out_of_range("Invalid index");
+      Elem* curr = head;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next;
+      }
+      return curr->data;
+    }
+
+    const T& operator[](size_t index) const {
+      if (index >= sz) throw std::out_of_range("Invalid index");
+      Elem* curr = head;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next;
+      }
+      return curr->data;
+    }
