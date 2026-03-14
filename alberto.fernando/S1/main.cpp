@@ -37,3 +37,14 @@ if (names.empty()) {
     first = false;
   }
   std::cout << "\n";
+size_t max_size = 0;
+  for (auto it = nums.cbegin(); it != nums.cend(); ++it) {
+    if (it->size() > max_size) {
+      max_size = it->size();
+    }
+  }
+
+  if (max_size == 0) {
+    std::cout << "0\n";
+    return 0;
+  }
