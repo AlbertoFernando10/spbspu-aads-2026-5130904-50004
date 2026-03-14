@@ -234,3 +234,31 @@ void push_front(const T& value) {
       delete temp;
       sz--;
     }
+void insert(size_t index, const T& value) {
+      if (index > sz) throw std::out_of_range("Invalid index");
+      if (index == 0) { push_front(value); return; }
+      if (index == sz) { push_back(value); return; }
+
+      Elem* atual = head;
+      for (size_t i = 0; i < index; ++i) atual = atual->next;
+
+      Elem* anterior = atual->prev;
+      Elem* novo = new Elem(value, atual, anterior);
+      anterior->next = novo;
+      atual->prev = novo;
+      sz++;
+    }
+
+    void insert(size_t index, T&& value) {
+      if (index > sz) throw std::out_of_range("Invalid index");
+      if (index == 0) { push_front(std::move(value)); return; }
+      if (index == sz) { push_back(std::move(value)); return; }
+
+      Elem* atual = head;
+      for (size_t i = 0; i < index; ++i) atual = atual->next;
+      Elem* anterior = atual->prev;
+      Elem* novo = new Elem(std::move(value), atual, anterior);
+      anterior->next = novo;
+      atual->prev = novo;
+      sz++;
+    }
