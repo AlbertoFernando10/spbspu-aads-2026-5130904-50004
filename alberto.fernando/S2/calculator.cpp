@@ -80,3 +80,34 @@ Queue<std::string> infix_to_postfix(const std::string& line) {
 
     return output;
 }
+long long eval_postfix(Queue<std::string>& pf) {
+    Stack<long long> stk;
+
+    while (!pf.empty()) {
+        std::string tok = pf.drop();
+        if (is_operator(tok)) {
+            if (stk.size() < 2)
+                throw std::runtime_error("invalid expression (not enough operands)");
+            long long b = stk.drop();
+            long long a = stk.drop();
+            stk.push(apply_op(tok, a, b));
+        } else {
+            bool neg  = false;
+            size_t i  = 0;
+            if (!tok.empty() && tok[0] == '-') { neg = true;  ++i; }
+            else if (!tok.empty() && tok[0] == '+')            ++i;
+
+            long long val = 0;
+            for (; i < tok.size(); ++i) {
+                if (tok[i] < '0' || tok[i] > '9')
+                    throw std::runtime_error("invalid number: " + tok);
+                val = val * 10 + (tok[i] - '0');
+            }
+            stk.push(neg ? -val : val);
+        }
+    }
+
+    if (stk.size() != 1)
+        throw std::runtime_error("invalid expression (leftover operands)");
+    return stk.drop();
+}
