@@ -111,3 +111,9 @@ long long eval_postfix(Queue<std::string>& pf) {
         throw std::runtime_error("invalid expression (leftover operands)");
     return stk.drop();
 }
+long long process_line(const std::string& line) {
+    auto pf = infix_to_postfix(line);
+    return eval_postfix(pf);
+}
+
+}
