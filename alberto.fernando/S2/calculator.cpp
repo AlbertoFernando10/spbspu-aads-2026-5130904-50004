@@ -30,3 +30,53 @@ long long apply_op(const std::string& op, long long a, long long b) {
     if (op == "&") return a & b;
     throw std::runtime_error("unknown operator: " + op);
 }
+Queue<std::string> infix_to_postfix(const std::string& line) {
+    Queue<std::string> output;
+    Stack<std::string> ops;
+
+    size_t pos = 0;
+    while (pos <= line.size()) {
+        size_t end = line.find(' ', pos);
+        if (end == std::string::npos) end = line.size();
+
+        std::string tok = line.substr(pos, end - pos);
+        pos = end + 1;
+
+        if (tok.empty()) continue;
+
+        if (tok == "(") {
+            ops.push(tok);
+        } else if (tok == ")") {
+            while (!ops.empty() && ops.top() != "(") {
+                output.push(ops.drop());
+            }
+            if (ops.empty())
+                throw std::runtime_error("mismatched parentheses");
+            ops.drop();
+        } else if (is_operator(tok)) {
+            while (!ops.empty() &&
+                   ops.top() != "(" &&
+                   precedence(ops.top()) >= precedence(tok)) {
+                output.push(ops.drop());
+            }
+            ops.push(tok);
+        } else {
+            size_t i = 0;
+            if (!tok.empty() && (tok[0] == '-' || tok[0] == '+')) ++i;
+            bool valid = (i < tok.size());
+            for (; i < tok.size(); ++i)
+                if (tok[i] < '0' || tok[i] > '9') { valid = false; break; }
+            if (!valid)
+                throw std::runtime_error("invalid token: \"" + tok + "\"");
+            output.push(tok);
+        }
+    }
+
+    while (!ops.empty()) {
+        if (ops.top() == "(" || ops.top() == ")")
+            throw std::runtime_error("mismatched parentheses");
+        output.push(ops.drop());
+    }
+
+    return output;
+}
