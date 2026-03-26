@@ -39,3 +39,23 @@ public:
         std::swap(tail_, o.tail_);
         std::swap(size_, o.size_);
     }
+    bool   empty() const noexcept { return size_ == 0; }
+    size_t size()  const noexcept { return size_; }
+
+    T& front() {
+        if (!head_) throw std::out_of_range("List::front: empty list");
+        return head_->value;
+    }
+    const T& front() const {
+        if (!head_) throw std::out_of_range("List::front: empty list");
+        return head_->value;
+    }
+
+    T& back() {
+        if (!tail_) throw std::out_of_range("List::back: empty list");
+        return tail_->value;
+    }
+    const T& back() const {
+        if (!tail_) throw std::out_of_range("List::back: empty list");
+        return tail_->value;
+    }
