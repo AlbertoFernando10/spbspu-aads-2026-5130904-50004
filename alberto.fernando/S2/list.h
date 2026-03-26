@@ -59,3 +59,43 @@ public:
         if (!tail_) throw std::out_of_range("List::back: empty list");
         return tail_->value;
     }
+    void push_front(T v) {
+        Node* n = new Node(std::move(v), head_);
+        head_ = n;
+        if (!tail_) tail_ = n;
+        ++size_;
+    }
+
+    void push_back(T v) {
+        Node* n = new Node(std::move(v));
+        if (tail_) tail_->next = n;
+        else       head_ = n;
+        tail_ = n;
+        ++size_;
+    }
+
+    T pop_front() {
+        if (!head_) throw std::out_of_range("List::pop_front: empty list");
+        Node* n = head_;
+        T val   = std::move(n->value);
+        head_   = head_->next;
+        if (!head_) tail_ = nullptr;
+        delete n;
+        --size_;
+        return val;
+    }
+
+    void clear() noexcept {
+        while (head_) {
+            Node* n = head_->next;
+            delete head_;
+            head_ = n;
+        }
+        tail_ = nullptr;
+        size_ = 0;
+    }
+};
+
+}
+
+#endif
