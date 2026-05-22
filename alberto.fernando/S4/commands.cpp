@@ -108,3 +108,34 @@ void cmdUnion(
 
   datasets.push(newName, std::move(result));
 }
+}
+
+void alberto::loadFile(const std::string &filename, OuterTree &datasets)
+{
+  std::ifstream fin(filename);
+  if (!fin) {
+    throw std::runtime_error("Cannot open file: " + filename);
+  }
+
+  std::string line;
+  while (std::getline(fin, line)) {
+    if (line.empty()) {
+      continue;
+    }
+    std::istringstream iss(line);
+
+    std::string name;
+    if (!(iss >> name)) {
+      continue;
+    }
+
+    InnerTree tree;
+    int key = 0;
+    std::string val;
+    while (iss >> key >> val) {
+      tree.push(key, val);
+    }
+
+    datasets.push(name, std::move(tree));
+  }
+}
