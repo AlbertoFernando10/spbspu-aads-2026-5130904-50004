@@ -81,3 +81,25 @@ public:
     --(*this);
     return t;
   }
+  bool operator==(const BSTIterator &o) const noexcept
+  {
+    return node_ == o.node_;
+  }
+
+  bool operator!=(const BSTIterator &o) const noexcept
+  {
+    return node_ != o.node_;
+  }
+
+private:
+  using Node = BSTNode< Key, Value >;
+
+  Node *node_;
+
+  explicit BSTIterator(Node *n) noexcept:
+    node_(n)
+  {}
+
+  template< class K, class V, class C > friend class BSTree;
+  friend class BSTConstIterator< Key, Value >;
+};
