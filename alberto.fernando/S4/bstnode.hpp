@@ -65,3 +65,32 @@ struct BSTNode {
   {
     return kind_ == Kind::FAKE_ROOT;
   }
+  const Key &key() const
+  {
+    return data_->first;
+  }
+
+  Value &value()
+  {
+    return data_->second;
+  }
+
+  const Value &value() const
+  {
+    return data_->second;
+  }
+
+  pair_t &pair()
+  {
+    return *data_;
+  }
+
+  const pair_t &pair() const
+  {
+    return *data_;
+  }
+};
+
+}
+
+#endif
