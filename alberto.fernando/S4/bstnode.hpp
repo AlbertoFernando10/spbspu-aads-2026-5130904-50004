@@ -46,3 +46,22 @@ struct BSTNode {
 
   BSTNode(const BSTNode &) = delete;
   BSTNode &operator=(const BSTNode &) = delete;
+  bool isReal() const noexcept
+  {
+    return kind_ == Kind::REAL;
+  }
+
+  bool isFake() const noexcept
+  {
+    return kind_ != Kind::REAL;
+  }
+
+  bool isFakeLeaf() const noexcept
+  {
+    return kind_ == Kind::FAKE_LEAF;
+  }
+
+  bool isFakeRoot() const noexcept
+  {
+    return kind_ == Kind::FAKE_ROOT;
+  }
