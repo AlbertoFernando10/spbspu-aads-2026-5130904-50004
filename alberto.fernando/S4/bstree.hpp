@@ -85,3 +85,73 @@ public:
   {
     return size_;
   }
+  iterator begin() noexcept
+  {
+    if (rootRef()->isFake()) {
+      return end();
+    }
+    return iterator(leftmost(rootRef()));
+  }
+
+  iterator end() noexcept
+  {
+    return iterator(fakeRoot_);
+  }
+
+  const_iterator begin() const noexcept
+  {
+    if (root()->isFake()) {
+      return end();
+    }
+    return const_iterator(leftmost(const_cast< Node * >(root())));
+  }
+
+  const_iterator end() const noexcept
+  {
+    return const_iterator(fakeRoot_);
+  }
+
+  const_iterator cbegin() const noexcept
+  {
+    return begin();
+  }
+
+  const_iterator cend() const noexcept
+  {
+    return end();
+  }
+
+  iterator find(const Key &k) noexcept
+  {
+    Node *cur = rootRef();
+    while (cur->isReal()) {
+      if (cmp_(k, cur->key())) {
+        cur = cur->left_;
+      } else if (cmp_(cur->key(), k)) {
+        cur = cur->right_;
+      } else {
+        return iterator(cur);
+      }
+    }
+    return end();
+  }
+
+  const_iterator find(const Key &k) const noexcept
+  {
+    const Node *cur = root();
+    while (cur->isReal()) {
+      if (cmp_(k, cur->key())) {
+        cur = cur->left_;
+      } else if (cmp_(cur->key(), k)) {
+        cur = cur->right_;
+      } else {
+        return const_iterator(cur);
+      }
+    }
+    return end();
+  }
+
+  bool has(const Key &k) const noexcept
+  {
+    return find(k) != end();
+  }
