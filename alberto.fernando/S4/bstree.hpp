@@ -264,3 +264,163 @@ public:
     rootRef() = fakeLeaf_;
     size_     = 0;
   }
+  const_iterator rotateRight(const_iterator it)
+  {
+    Node *p = const_cast< Node * >(it.node_);
+    if (!p->isReal()) {
+      throw std::invalid_argument("rotateRight: invalid node");
+    }
+    Node *x = p->left_;
+    if (!x->isReal()) {
+      throw std::invalid_argument("rotateRight: no left child");
+    }
+
+    p->left_ = x->right_;
+    if (x->right_->isReal()) {
+      x->right_->parent_ = p;
+    }
+
+    x->parent_ = p->parent_;
+    transplant(p, x);
+    x->right_  = p;
+    p->parent_ = x;
+
+    return const_iterator(x);
+  }
+
+  const_iterator rotateLeft(const_iterator it)
+  {
+    Node *p = const_cast< Node * >(it.node_);
+    if (!p->isReal()) {
+      throw std::invalid_argument("rotateLeft: invalid node");
+    }
+    Node *x = p->right_;
+    if (!x->isReal()) {
+      throw std::invalid_argument("rotateLeft: no right child");
+    }
+
+    p->right_ = x->left_;
+    if (x->left_->isReal()) {
+      x->left_->parent_ = p;
+    }
+
+    x->parent_ = p->parent_;
+    transplant(p, x);
+    x->left_   = p;
+    p->parent_ = x;
+
+    return const_iterator(x);
+  }
+
+  const_iterator rotateLargeLeft(const_iterator it)
+  {
+    Node *p = const_cast< Node * >(it.node_);
+    if (!p->isReal()) {
+      throw std::invalid_argument("rotateLargeLeft: invalid node");
+    }
+    rotateRight(const_iterator(p->right_));
+    return rotateLeft(const_iterator(p));
+  }
+
+  const_iterator rotateLargeRight(const_iterator it)
+  {
+    Node *p = const_cast< Node * >(it.node_);
+    if (!p->isReal()) {
+      throw std::invalid_argument("rotateLargeRight: invalid node");
+    }
+    rotateLeft(const_iterator(p->left_));
+    return rotateRight(const_iterator(p));
+  }
+
+  size_type height(const_iterator it) const noexcept
+  {
+    const Node *n = it.node_;
+    if (!n->isReal()) {
+      return 0;
+    }
+    const size_type lh = height(const_iterator(n->left_));
+    const size_type rh = height(const_iterator(n->right_));
+    return 1 + (lh > rh ? lh : rh);
+  }
+
+  size_type height() const noexcept
+  {
+    if (cbegin() == cend()) {
+      return 0;
+    }
+    return height(const_iterator(root()));
+  }
+
+private:
+  using Node = BSTNode< Key, Value >;
+
+  Node     *fakeLeaf_;
+  Node     *fakeRoot_;
+  size_type size_;
+  Compare   cmp_;
+
+  Node *&rootRef() noexcept
+  {
+    return fakeRoot_->left_;
+  }
+
+  const Node *root() const noexcept
+  {
+    return fakeRoot_->left_;
+  }
+
+  Node *leftmost(Node *n) const noexcept
+  {
+    while (n->left_->isReal()) {
+      n = n->left_;
+    }
+    return n;
+  }
+
+  Node *rightmost(Node *n) const noexcept
+  {
+    while (n->right_->isReal()) {
+      n = n->right_;
+    }
+    return n;
+  }
+
+  void transplant(Node *oldNode, Node *n) noexcept
+  {
+    Node *p = oldNode->parent_;
+    if (p->left_ == oldNode) {
+      p->left_ = n;
+    } else {
+      p->right_ = n;
+    }
+    if (n->isReal()) {
+      n->parent_ = p;
+    }
+  }
+
+  void destroy(Node *n) noexcept
+  {
+    if (!n || n->isFake()) {
+      return;
+    }
+    destroy(n->left_);
+    destroy(n->right_);
+    delete n;
+  }
+
+  Node *cloneTree(const Node *src, Node *parent)
+  {
+    if (src->isFake()) {
+      return fakeLeaf_;
+    }
+    Node *n    = new Node(src->key(), src->value(), fakeLeaf_);
+    n->parent_ = parent;
+    n->left_   = cloneTree(src->left_,  n);
+    n->right_  = cloneTree(src->right_, n);
+    return n;
+  }
+};
+
+}
+
+#endif
