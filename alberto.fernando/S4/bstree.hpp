@@ -155,3 +155,112 @@ public:
   {
     return find(k) != end();
   }
+  iterator push(const Key &k, const Value &v)
+  {
+    Node *parent = fakeRoot_;
+    Node *cur    = rootRef();
+    bool goLeft  = true;
+
+    while (cur->isReal()) {
+      parent = cur;
+      if (cmp_(k, cur->key())) {
+        cur    = cur->left_;
+        goLeft = true;
+      } else if (cmp_(cur->key(), k)) {
+        cur    = cur->right_;
+        goLeft = false;
+      } else {
+        cur->value() = v;
+        return iterator(cur);
+      }
+    }
+
+    Node *n    = new Node(k, v, fakeLeaf_);
+    n->parent_ = parent;
+
+    if (parent->isFakeRoot()) {
+      fakeRoot_->left_ = n;
+    } else if (goLeft) {
+      parent->left_ = n;
+    } else {
+      parent->right_ = n;
+    }
+
+    ++size_;
+    return iterator(n);
+  }
+
+  Value &get(const Key &k)
+  {
+    auto it = find(k);
+    if (it == end()) {
+      throw std::out_of_range("BSTree::get — key not found");
+    }
+    return it->second;
+  }
+
+  const Value &get(const Key &k) const
+  {
+    auto it = find(k);
+    if (it == end()) {
+      throw std::out_of_range("BSTree::get — key not found");
+    }
+    return it->second;
+  }
+
+  Value &operator[](const Key &k)
+  {
+    auto it = find(k);
+    if (it != end()) {
+      return it->second;
+    }
+    return push(k, Value{})->second;
+  }
+
+  Value drop(const Key &k)
+  {
+    auto it = find(k);
+    if (it == end()) {
+      throw std::out_of_range("BSTree::drop — key not found");
+    }
+    Value v = std::move(it->second);
+    erase(it);
+    return v;
+  }
+
+  iterator erase(iterator it)
+  {
+    Node *z = it.node_;
+    if (!z->isReal()) {
+      throw std::invalid_argument("BSTree::erase — invalid iterator");
+    }
+
+    iterator succ = std::next(it);
+
+    if (!z->left_->isReal()) {
+      transplant(z, z->right_);
+    } else if (!z->right_->isReal()) {
+      transplant(z, z->left_);
+    } else {
+      Node *y = leftmost(z->right_);
+      if (y->parent_ != z) {
+        transplant(y, y->right_);
+        y->right_          = z->right_;
+        y->right_->parent_ = y;
+      }
+      transplant(z, y);
+      y->left_          = z->left_;
+      y->left_->parent_ = y;
+    }
+
+    --size_;
+    delete z;
+    return succ;
+  }
+
+  void clear() noexcept
+  {
+    destroy(rootRef());
+    rootRef() = fakeLeaf_;
+    size_     = 0;
+  }
