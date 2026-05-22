@@ -32,3 +32,52 @@ public:
   {
     return node_->data_;
   }
+  BSTIterator &operator++() noexcept
+  {
+    if (node_->right_->isReal()) {
+      node_ = node_->right_;
+      while (node_->left_->isReal()) {
+        node_ = node_->left_;
+      }
+    } else {
+      BSTNode< Key, Value > *p = node_->parent_;
+      while (p->isReal() && node_ == p->right_) {
+        node_ = p;
+        p = p->parent_;
+      }
+      node_ = p;
+    }
+    return *this;
+  }
+
+  BSTIterator operator++(int) noexcept
+  {
+    auto t = *this;
+    ++(*this);
+    return t;
+  }
+
+  BSTIterator &operator--() noexcept
+  {
+    if (node_->left_->isReal()) {
+      node_ = node_->left_;
+      while (node_->right_->isReal()) {
+        node_ = node_->right_;
+      }
+    } else {
+      BSTNode< Key, Value > *p = node_->parent_;
+      while (p->isReal() && node_ == p->left_) {
+        node_ = p;
+        p = p->parent_;
+      }
+      node_ = p;
+    }
+    return *this;
+  }
+
+  BSTIterator operator--(int) noexcept
+  {
+    auto t = *this;
+    --(*this);
+    return t;
+  }
