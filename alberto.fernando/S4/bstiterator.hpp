@@ -103,3 +103,104 @@ private:
   template< class K, class V, class C > friend class BSTree;
   friend class BSTConstIterator< Key, Value >;
 };
+template< class Key, class Value >
+class BSTConstIterator {
+public:
+  using value_type        = std::pair< const Key, Value >;
+  using reference         = const value_type &;
+  using pointer           = const value_type *;
+  using difference_type   = std::ptrdiff_t;
+  using iterator_category = std::bidirectional_iterator_tag;
+
+  BSTConstIterator() noexcept:
+    node_(nullptr)
+  {}
+
+  BSTConstIterator(const BSTIterator< Key, Value > &it) noexcept:
+    node_(it.node_)
+  {}
+
+  reference operator*() const
+  {
+    return node_->pair();
+  }
+
+  pointer operator->() const
+  {
+    return node_->data_;
+  }
+
+  BSTConstIterator &operator++() noexcept
+  {
+    if (node_->right_->isReal()) {
+      node_ = node_->right_;
+      while (node_->left_->isReal()) {
+        node_ = node_->left_;
+      }
+    } else {
+      const BSTNode< Key, Value > *p = node_->parent_;
+      while (p->isReal() && node_ == p->right_) {
+        node_ = p;
+        p = p->parent_;
+      }
+      node_ = p;
+    }
+    return *this;
+  }
+
+  BSTConstIterator operator++(int) noexcept
+  {
+    auto t = *this;
+    ++(*this);
+    return t;
+  }
+
+  BSTConstIterator &operator--() noexcept
+  {
+    if (node_->left_->isReal()) {
+      node_ = node_->left_;
+      while (node_->right_->isReal()) {
+        node_ = node_->right_;
+      }
+    } else {
+      const BSTNode< Key, Value > *p = node_->parent_;
+      while (p->isReal() && node_ == p->left_) {
+        node_ = p;
+        p = p->parent_;
+      }
+      node_ = p;
+    }
+    return *this;
+  }
+
+  BSTConstIterator operator--(int) noexcept
+  {
+    auto t = *this;
+    --(*this);
+    return t;
+  }
+
+  bool operator==(const BSTConstIterator &o) const noexcept
+  {
+    return node_ == o.node_;
+  }
+
+  bool operator!=(const BSTConstIterator &o) const noexcept
+  {
+    return node_ != o.node_;
+  }
+
+private:
+  using Node = BSTNode< Key, Value >;
+
+  const Node *node_;
+
+  explicit BSTConstIterator(const Node *n) noexcept:
+    node_(n)
+  {}
+
+  template< class K, class V, class C > friend class BSTree;
+};
+
+}
+#endif
