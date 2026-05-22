@@ -139,3 +139,53 @@ void alberto::loadFile(const std::string &filename, OuterTree &datasets)
     datasets.push(name, std::move(tree));
   }
 }
+void alberto::repl(OuterTree &datasets)
+{
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    if (line.empty()) {
+      continue;
+    }
+    std::istringstream iss(line);
+
+    std::string cmd;
+    iss >> cmd;
+
+    if (cmd == "print") {
+      std::string name;
+      if (!(iss >> name)) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+      }
+      cmdPrint(name, datasets);
+
+    } else if (cmd == "complement") {
+      std::string newName, n1, n2;
+      if (!(iss >> newName >> n1 >> n2)) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+      }
+      cmdComplement(newName, n1, n2, datasets);
+
+    } else if (cmd == "intersect") {
+      std::string newName, n1, n2;
+      if (!(iss >> newName >> n1 >> n2)) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+      }
+      cmdIntersect(newName, n1, n2, datasets);
+
+    } else if (cmd == "union") {
+      std::string newName, n1, n2;
+      if (!(iss >> newName >> n1 >> n2)) {
+        std::cout << "<INVALID COMMAND>\n";
+        continue;
+      }
+      cmdUnion(newName, n1, n2, datasets);
+
+    } else {
+      std::cout << "<INVALID COMMAND>\n";
+    }
+  }
+}
+}
