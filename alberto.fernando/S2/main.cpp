@@ -1,8 +1,8 @@
+#include "calculator.h"
+#include "stack.h"
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "calculator.h"
-#include "stack.h"
 
 int main(int argc, char* argv[]) {
     using namespace alberto;
@@ -20,10 +20,12 @@ int main(int argc, char* argv[]) {
     }
 
     Stack<long long> results;
-
     std::string line;
+
     while (std::getline(*in, line)) {
-        if (line.empty()) continue;
+        if (line.empty() || line.find_first_not_of(" \t") == std::string::npos) {
+            continue;
+        }
         try {
             results.push(process_line(line));
         } catch (const std::exception& e) {
@@ -31,14 +33,15 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-
-    bool first = true;
-    while (!results.empty()) {
-        if (!first) std::cout << ' ';
-        std::cout << results.drop();
-        first = false;
+    if (!results.empty()) {
+        bool first = true;
+        while (!results.empty()) {
+            if (!first) std::cout << ' ';
+            std::cout << results.drop();
+            first = false;
+        }
+        std::cout << '\n';
     }
-    if (!first) std::cout << '\n';
 
     return 0;
 }
