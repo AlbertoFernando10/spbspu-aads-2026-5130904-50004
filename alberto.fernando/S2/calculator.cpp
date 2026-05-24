@@ -1,5 +1,7 @@
 #include "calculator.h"
 #include <cstddef>
+#include <climits>
+#include <stdexcept>
 
 namespace alberto {
 
@@ -16,20 +18,43 @@ int precedence(const std::string& op) {
 }
 
 long long apply_op(const std::string& op, long long a, long long b) {
-    if (op == "+") return a + b;
-    if (op == "-") return a - b;
-    if (op == "*") return a * b;
+    if (op == "+") {
+        if ((b > 0 && a > LLONG_MAX - b) || (b < 0 && a < LLONG_MIN - b)) {
+            throw std::runtime_error("overflow in addition");
+        }
+        return a + b;
+    }
+    if (op == "-") {
+        if ((b < 0 && a > LLONG_MAX + b) || (b > 0 && a < LLONG_MIN + b)) {
+            throw std::runtime_error("overflow in subtraction");
+        }
+        return a - b;
+    }
+    if (op == "*") {
+        if (a != 0 && b != 0) {
+            if ((a > 0 && b > 0 && a > LLONG_MAX / b) ||
+                (a > 0 && b < 0 && b < LLONG_MIN / a) ||
+                (a < 0 && b > 0 && a < LLONG_MIN / b) ||
+                (a < 0 && b < 0 && -a > LLONG_MAX / -b)) {
+                throw std::runtime_error("overflow in multiplication");
+            }
+        }
+        return a * b;
+    }
     if (op == "/") {
         if (b == 0) throw std::runtime_error("division by zero");
         return a / b;
     }
     if (op == "%") {
         if (b == 0) throw std::runtime_error("modulo by zero");
-        return a % b;
+        long long r = a % b;
+        if (r < 0) r += b;
+        return r;
     }
     if (op == "&") return a & b;
     throw std::runtime_error("unknown operator: " + op);
 }
+
 Queue<std::string> infix_to_postfix(const std::string& line) {
     Queue<std::string> output;
     Stack<std::string> ops;
@@ -80,6 +105,7 @@ Queue<std::string> infix_to_postfix(const std::string& line) {
 
     return output;
 }
+
 long long eval_postfix(Queue<std::string>& pf) {
     Stack<long long> stk;
 
@@ -111,6 +137,7 @@ long long eval_postfix(Queue<std::string>& pf) {
         throw std::runtime_error("invalid expression (leftover operands)");
     return stk.drop();
 }
+
 long long process_line(const std::string& line) {
     auto pf = infix_to_postfix(line);
     return eval_postfix(pf);
