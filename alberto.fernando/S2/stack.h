@@ -1,3 +1,11 @@
+#ifndef ALBERTO_STACK_H
+#define ALBERTO_STACK_H
+
+#include "list.h"
+#include <cstddef>
+#include <utility>
+#include <stdexcept>
+
 namespace alberto {
 
 template<typename T>
