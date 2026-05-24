@@ -1,6 +1,10 @@
+#ifndef QUEUE_H
 #define QUEUE_H
 
 #include "list.h"
+#include <cstddef>
+#include <utility>
+#include <stdexcept>
 
 namespace alberto {
 
@@ -18,7 +22,13 @@ public:
     bool   empty() const noexcept { return data_.empty(); }
     size_t size()  const noexcept { return data_.size(); }
 
-    void push(T v) { data_.push_back(std::move(v)); }
+    void push(const T& value) {
+        data_.push_back(value);
+    }
+
+    void push(T&& value) {
+        data_.push_back(std::move(value));
+    }
 
     T drop() {
         if (empty()) throw std::out_of_range("Queue::drop: queue is empty");
@@ -26,6 +36,11 @@ public:
     }
 
     const T& front() const {
+        if (empty()) throw std::out_of_range("Queue::front: queue is empty");
+        return data_.front();
+    }
+
+    T& front() {
         if (empty()) throw std::out_of_range("Queue::front: queue is empty");
         return data_.front();
     }
