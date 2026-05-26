@@ -385,5 +385,8 @@ public:
 
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
+};
+
+}
 
 #endif
