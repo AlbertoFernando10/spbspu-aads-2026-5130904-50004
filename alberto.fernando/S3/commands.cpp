@@ -129,7 +129,6 @@ void alberto::cmdBind(GraphTable& graphs,
     g.addEdge(tok[2], tok[3], w);
   }
 }
-
 void alberto::cmdCut(GraphTable& graphs,
                       const std::vector< std::string >& tok)
 {
@@ -150,16 +149,24 @@ void alberto::cmdCut(GraphTable& graphs,
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
-  WeightList& wl      = g.edges.get(k);
-  const bool  removed = wl.remove_if([w](unsigned x) {
-    return x == w;
-  });
-  if (!removed) {
+  WeightList& wl = g.edges.get(k);
+  WeightList new_wl;
+  bool found = false;
+  for (const auto& weight : wl) {
+    if (weight != w) {
+      new_wl.push_back(weight);
+    } else {
+      found = true;
+    }
+  }
+  if (!found) {
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
-  if (wl.empty()) {
+  if (new_wl.empty()) {
     g.edges.drop(k);
+  } else {
+    g.edges.get(k) = std::move(new_wl);
   }
 }
 
