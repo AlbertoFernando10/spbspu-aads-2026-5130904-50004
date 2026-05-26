@@ -10,6 +10,9 @@ void alberto::cmdGraphs(const GraphTable& graphs)
   for (const auto& k : keys) {
     std::cout << k << "\n";
   }
+  if (keys.empty()) {
+    std::cout << "\n";
+  }
 }
 
 void alberto::cmdVertexes(const GraphTable& graphs,
@@ -24,7 +27,11 @@ void alberto::cmdVertexes(const GraphTable& graphs,
   for (const auto& k : keys) {
     std::cout << k << "\n";
   }
+  if (keys.empty()) {
+    std::cout << "\n";
+  }
 }
+
 void alberto::cmdOutbound(const GraphTable& graphs,
                            const std::vector< std::string >& tok)
 {
@@ -104,6 +111,7 @@ void alberto::cmdInbound(const GraphTable& graphs,
     std::cout << "\n";
   }
 }
+
 void alberto::cmdBind(GraphTable& graphs,
                        const std::vector< std::string >& tok)
 {
@@ -172,6 +180,7 @@ void alberto::cmdCreate(GraphTable& graphs,
   }
   safeAddGraph(graphs, tok[1], std::move(ng));
 }
+
 void alberto::cmdMerge(GraphTable& graphs,
                         const std::vector< std::string >& tok)
 {
