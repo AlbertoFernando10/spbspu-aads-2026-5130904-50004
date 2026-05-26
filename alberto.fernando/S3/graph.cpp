@@ -28,6 +28,31 @@ void alberto::Graph::addEdge(const std::string& src,
   }
 }
 
+void alberto::Graph::cutEdge(const std::string& src,
+                              const std::string& dst,
+                              unsigned w)
+{
+  const EdgeKey k{src, dst};
+  if (!edges.has(k)) {
+    return;
+  }
+  WeightList& wl = edges.get(k);
+  WeightList new_wl;
+  for (const auto& weight : wl) {
+    if (weight != w) {
+      new_wl.push_back(weight);
+    }
+  }
+  if (new_wl.empty()) {
+    edges.drop(k);
+  } else {
+    wl.clear();
+    for (const auto& weight : new_wl) {
+      wl.push_back(weight);
+    }
+  }
+}
+
 bool alberto::Graph::hasVertex(const std::string& v) const
 {
   return vertices.has(v);
