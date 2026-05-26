@@ -1,5 +1,6 @@
 #ifndef HASHTABLE_HPP
 #define HASHTABLE_HPP
+
 #include "slist.hpp"
 #include "xxhash.hpp"
 #include <cstddef>
@@ -43,6 +44,7 @@ struct pair_equal {
     return a == b;
   }
 };
+
 template< class Key, class Value,
           class Hash  = xx_hash,
           class Equal = std::equal_to< Key > >
@@ -83,7 +85,7 @@ public:
     numBuckets_(slots > 0 ? slots : 1),
     bucketSize_(bucketCap),
     hash_(h),
-    eq(eq)
+    equal_(eq)
   {
     buckets_ = new Bucket[numBuckets_];
   }
@@ -134,6 +136,7 @@ public:
     std::swap(hash_,       o.hash_);
     std::swap(equal_,      o.equal_);
   }
+
   void add(const Key& k, Value v)
   {
     const size_t idx = bucketIndex(k);
@@ -265,6 +268,7 @@ public:
     }
     return mx;
   }
+
   struct iterator {
     HashTable*              ht_;
     size_t                  bi_;
@@ -381,8 +385,5 @@ public:
 
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
-};
-
-}
 
 #endif
