@@ -1,232 +1,313 @@
-#ifndef SLIST_HPP
-#define SLIST_HPP
-#include <cstddef>
-#include <utility>
+#include "commands.hpp"
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
 
-namespace alberto {
-
-template< class T >
-class SList {
-  struct Node {
-    T     data;
-    Node* next = nullptr;
-
-    template< class... Args >
-    explicit Node(Args&&... args):
-      data(std::forward< Args >(args)...)
-    {}
-  };
-
-  Node*  head_ = nullptr;
-  size_t size_ = 0;
-
-public:
-
-  SList() = default;
-
-  SList(const SList& o)
-  {
-    Node** cur = &head_;
-    for (const Node* n = o.head_; n; n = n->next) {
-      *cur = new Node(n->data);
-      cur  = &(*cur)->next;
-      ++size_;
-    }
+void alberto::cmdGraphs(const GraphTable& graphs)
+{
+  const auto keys = sortedKeys(graphs);
+  for (const auto& k : keys) {
+    std::cout << k << "\n";
   }
-
-  SList(SList&& o) noexcept:
-    head_(o.head_),
-    size_(o.size_)
-  {
-    o.head_ = nullptr;
-    o.size_ = 0;
+  if (keys.empty()) {
+    std::cout << "\n";
   }
-
-  SList& operator=(SList o) noexcept
-  {
-    swap(o);
-    return *this;
-  }
-
-  ~SList()
-  {
-    clear();
-  }
-
-  void swap(SList& o) noexcept
-  {
-    std::swap(head_, o.head_);
-    std::swap(size_, o.size_);
-  }
-  void push_front(const T& v)
-  {
-    Node* n = new Node(v);
-    n->next = head_;
-    head_   = n;
-    ++size_;
-  }
-
-  void push_front(T&& v)
-  {
-    Node* n = new Node(std::move(v));
-    n->next = head_;
-    head_   = n;
-    ++size_;
-  }
-
-  void push_back(const T& v)
-  {
-    Node* n = new Node(v);
-    if (!head_) {
-      head_ = n;
-    } else {
-      Node* cur = head_;
-      while (cur->next) {
-        cur = cur->next;
-      }
-      cur->next = n;
-    }
-    ++size_;
-  }
-
-  template< class Pred >
-  bool remove_if(Pred pred)
-  {
-    Node** cur = &head_;
-    while (*cur) {
-      if (pred((*cur)->data)) {
-        Node* del = *cur;
-        *cur = del->next;
-        delete del;
-        --size_;
-        return true;
-      }
-      cur = &(*cur)->next;
-    }
-    return false;
-  }
-
-  void clear()
-  {
-    while (head_) {
-      Node* n = head_->next;
-      delete head_;
-      head_ = n;
-    }
-    size_ = 0;
-  }
-
-  size_t size() const
-  {
-    return size_;
-  }
-
-  bool empty() const
-  {
-    return size_ == 0;
-  }
-  struct iterator {
-    Node* n_;
-
-    explicit iterator(Node* n):
-      n_(n)
-    {}
-
-    T& operator*()
-    {
-      return n_->data;
-    }
-
-    T* operator->()
-    {
-      return &n_->data;
-    }
-
-    iterator& operator++()
-    {
-      n_ = n_->next;
-      return *this;
-    }
-
-    bool operator==(iterator o) const
-    {
-      return n_ == o.n_;
-    }
-
-    bool operator!=(iterator o) const
-    {
-      return n_ != o.n_;
-    }
-  };
-
-  struct const_iterator {
-    const Node* n_;
-
-    explicit const_iterator(const Node* n):
-      n_(n)
-    {}
-
-    const_iterator(iterator it):
-      n_(it.n_)
-    {}
-
-    const T& operator*() const
-    {
-      return n_->data;
-    }
-
-    const T* operator->() const
-    {
-      return &n_->data;
-    }
-
-    const_iterator& operator++()
-    {
-      n_ = n_->next;
-      return *this;
-    }
-
-    bool operator==(const_iterator o) const
-    {
-      return n_ == o.n_;
-    }
-
-    bool operator!=(const_iterator o) const
-    {
-      return n_ != o.n_;
-    }
-  };
-  iterator begin()
-  {
-    return iterator{head_};
-  }
-
-  iterator end()
-  {
-    return iterator{nullptr};
-  }
-
-  const_iterator begin() const
-  {
-    return const_iterator{head_};
-  }
-
-  const_iterator end() const
-  {
-    return const_iterator{nullptr};
-  }
-
-  const_iterator cbegin() const
-  {
-    return begin();
-  }
-
-  const_iterator cend() const
-  {
-    return end();
-  }
-};
-
 }
 
-#endif
+void alberto::cmdVertexes(const GraphTable& graphs,
+                           const std::vector< std::string >& tok)
+{
+  if (tok.size() < 2 || !graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  const Graph& g    = graphs.get(tok[1]);
+  const auto   keys = sortedKeys(g.vertices);
+  for (const auto& k : keys) {
+    std::cout << k << "\n";
+  }
+  if (keys.empty()) {
+    std::cout << "\n";
+  }
+}
+
+void alberto::cmdOutbound(const GraphTable& graphs,
+                           const std::vector< std::string >& tok)
+{
+  if (tok.size() < 3 || !graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  const Graph& g = graphs.get(tok[1]);
+  if (!g.hasVertex(tok[2])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
+  const std::string& src = tok[2];
+  std::vector< std::pair< std::string, std::vector< unsigned > > > out;
+
+  for (const auto& ep : g.edges) {
+    if (ep.first.first == src) {
+      std::vector< unsigned > ws;
+      for (unsigned w : ep.second) {
+        ws.push_back(w);
+      }
+      std::sort(ws.begin(), ws.end());
+      out.push_back({ep.first.second, std::move(ws)});
+    }
+  }
+  std::sort(out.begin(), out.end(),
+      [](const auto& a, const auto& b) {
+        return a.first < b.first;
+      });
+
+  for (const auto& row : out) {
+    std::cout << row.first;
+    for (unsigned w : row.second) {
+      std::cout << " " << w;
+    }
+    std::cout << "\n";
+  }
+}
+
+void alberto::cmdInbound(const GraphTable& graphs,
+                          const std::vector< std::string >& tok)
+{
+  if (tok.size() < 3 || !graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  const Graph& g = graphs.get(tok[1]);
+  if (!g.hasVertex(tok[2])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
+  const std::string& dst = tok[2];
+  std::vector< std::pair< std::string, std::vector< unsigned > > > in;
+
+  for (const auto& ep : g.edges) {
+    if (ep.first.second == dst) {
+      std::vector< unsigned > ws;
+      for (unsigned w : ep.second) {
+        ws.push_back(w);
+      }
+      std::sort(ws.begin(), ws.end());
+      in.push_back({ep.first.first, std::move(ws)});
+    }
+  }
+  std::sort(in.begin(), in.end(),
+      [](const auto& a, const auto& b) {
+        return a.first < b.first;
+      });
+
+  for (const auto& row : in) {
+    std::cout << row.first;
+    for (unsigned w : row.second) {
+      std::cout << " " << w;
+    }
+    std::cout << "\n";
+  }
+}
+
+void alberto::cmdBind(GraphTable& graphs,
+                       const std::vector< std::string >& tok)
+{
+  if (tok.size() < 5 || !graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
+  Graph& g = graphs.get(tok[1]);
+  try {
+    g.addEdge(tok[2], tok[3], w);
+  } catch (std::overflow_error&) {
+    g.edges.rehash(g.edges.bucketCount() * 2);
+    g.vertices.rehash(g.vertices.bucketCount() * 2);
+    g.addEdge(tok[2], tok[3], w);
+  }
+}
+
+void alberto::cmdCut(GraphTable& graphs,
+                      const std::vector< std::string >& tok)
+{
+  if (tok.size() < 5 || !graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  Graph& g = graphs.get(tok[1]);
+  if (!g.hasVertex(tok[2]) || !g.hasVertex(tok[3])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
+  const EdgeKey  k{tok[2], tok[3]};
+  const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
+
+  if (!g.edges.has(k)) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  WeightList& wl      = g.edges.get(k);
+  const bool  removed = wl.remove_if([w](unsigned x) {
+    return x == w;
+  });
+  if (!removed) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  if (wl.empty()) {
+    g.edges.drop(k);
+  }
+}
+
+void alberto::cmdCreate(GraphTable& graphs,
+                         const std::vector< std::string >& tok)
+{
+  if (tok.size() < 2 || graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+  Graph  ng;
+  size_t cnt = 0;
+  if (tok.size() >= 3) {
+    cnt = static_cast< size_t >(std::stoul(tok[2]));
+    for (size_t i = 0; i < cnt && (3 + i) < tok.size(); ++i) {
+      ng.ensureVertex(tok[3 + i]);
+    }
+  }
+  safeAddGraph(graphs, tok[1], std::move(ng));
+}
+
+void alberto::cmdMerge(GraphTable& graphs,
+                        const std::vector< std::string >& tok)
+{
+  if (tok.size() < 4
+      || !graphs.has(tok[2]) || !graphs.has(tok[3])
+      || graphs.has(tok[1]))
+  {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
+  Graph ng;
+  for (int s = 2; s <= 3; ++s) {
+    const Graph& src = graphs.get(tok[s]);
+    for (const auto& vp : src.vertices) {
+      ng.ensureVertex(vp.first);
+    }
+    for (const auto& ep : src.edges) {
+      for (unsigned w : ep.second) {
+        const EdgeKey k = ep.first;
+        if (!ng.edges.has(k)) {
+          WeightList wl;
+          wl.push_back(w);
+          try {
+            ng.edges.add(k, std::move(wl));
+          } catch (std::overflow_error&) {
+            ng.edges.rehash(ng.edges.bucketCount() * 2);
+            ng.edges.add(k, std::move(wl));
+          }
+        } else {
+          ng.edges.get(k).push_back(w);
+        }
+      }
+    }
+  }
+  safeAddGraph(graphs, tok[1], std::move(ng));
+}
+
+void alberto::cmdExtract(GraphTable& graphs,
+                          const std::vector< std::string >& tok)
+{
+  if (tok.size() < 4 || !graphs.has(tok[2]) || graphs.has(tok[1])) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
+  const size_t cnt = static_cast< size_t >(std::stoul(tok[3]));
+  std::vector< std::string > verts;
+  for (size_t i = 0; i < cnt && (4 + i) < tok.size(); ++i) {
+    verts.push_back(tok[4 + i]);
+  }
+
+  const Graph& src = graphs.get(tok[2]);
+  for (const auto& v : verts) {
+    if (!src.hasVertex(v)) {
+      std::cout << "<INVALID COMMAND>\n";
+      return;
+    }
+  }
+
+  Graph ng;
+  for (const auto& v : verts) {
+    ng.ensureVertex(v);
+  }
+
+  const auto inSet = [&](const std::string& x) {
+    return std::find(verts.begin(), verts.end(), x) != verts.end();
+  };
+
+  for (const auto& ep : src.edges) {
+    if (inSet(ep.first.first) && inSet(ep.first.second)) {
+      for (unsigned w : ep.second) {
+        const EdgeKey k = ep.first;
+        if (!ng.edges.has(k)) {
+          WeightList wl;
+          wl.push_back(w);
+          try {
+            ng.edges.add(k, std::move(wl));
+          } catch (std::overflow_error&) {
+            ng.edges.rehash(ng.edges.bucketCount() * 2);
+            ng.edges.add(k, std::move(wl));
+          }
+        } else {
+          ng.edges.get(k).push_back(w);
+        }
+      }
+    }
+  }
+  safeAddGraph(graphs, tok[1], std::move(ng));
+}
+
+void alberto::buildCommands(HashTable< std::string, CmdFn, xx_hash >& cmds)
+{
+  cmds.add("graphs",
+      [](GraphTable& g, const std::vector< std::string >&) {
+        cmdGraphs(g);
+      });
+  cmds.add("vertexes",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdVertexes(g, t);
+      });
+  cmds.add("outbound",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdOutbound(g, t);
+      });
+  cmds.add("inbound",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdInbound(g, t);
+      });
+  cmds.add("bind",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdBind(g, t);
+      });
+  cmds.add("cut",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdCut(g, t);
+      });
+  cmds.add("create",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdCreate(g, t);
+      });
+  cmds.add("merge",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdMerge(g, t);
+      });
+  cmds.add("extract",
+      [](GraphTable& g, const std::vector< std::string >& t) {
+        cmdExtract(g, t);
+      });
+}
