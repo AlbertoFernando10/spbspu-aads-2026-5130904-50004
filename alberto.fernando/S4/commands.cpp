@@ -9,6 +9,7 @@ namespace {
 
 using alberto::InnerTree;
 using alberto::OuterTree;
+
 void cmdPrint(const std::string &name, const OuterTree &datasets)
 {
   const auto it = datasets.find(name);
@@ -36,9 +37,14 @@ void cmdComplement(
     const std::string &n2,
     OuterTree &datasets)
 {
+  if (datasets.has(newName)) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
-  if (it1 == datasets.end() || it2 == datasets.end() || datasets.has(newName)) {
+  if (it1 == datasets.end() || it2 == datasets.end()) {
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
@@ -62,9 +68,14 @@ void cmdIntersect(
     const std::string &n2,
     OuterTree &datasets)
 {
+  if (datasets.has(newName)) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
-  if (it1 == datasets.end() || it2 == datasets.end() || datasets.has(newName)) {
+  if (it1 == datasets.end() || it2 == datasets.end()) {
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
@@ -88,9 +99,14 @@ void cmdUnion(
     const std::string &n2,
     OuterTree &datasets)
 {
+  if (datasets.has(newName)) {
+    std::cout << "<INVALID COMMAND>\n";
+    return;
+  }
+
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
-  if (it1 == datasets.end() || it2 == datasets.end() || datasets.has(newName)) {
+  if (it1 == datasets.end() || it2 == datasets.end()) {
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
@@ -108,9 +124,12 @@ void cmdUnion(
 
   datasets.push(newName, std::move(result));
 }
+
 }
 
-void alberto::loadFile(const std::string &filename, OuterTree &datasets)
+namespace alberto {
+
+void loadFile(const std::string &filename, OuterTree &datasets)
 {
   std::ifstream fin(filename);
   if (!fin) {
@@ -139,7 +158,8 @@ void alberto::loadFile(const std::string &filename, OuterTree &datasets)
     datasets.push(name, std::move(tree));
   }
 }
-void alberto::repl(OuterTree &datasets)
+
+void repl(OuterTree &datasets)
 {
   std::string line;
   while (std::getline(std::cin, line)) {
@@ -187,4 +207,6 @@ void alberto::repl(OuterTree &datasets)
       std::cout << "<INVALID COMMAND>\n";
     }
   }
+}
+
 }
