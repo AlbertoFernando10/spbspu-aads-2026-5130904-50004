@@ -37,11 +37,6 @@ void cmdComplement(
     const std::string &n2,
     OuterTree &datasets)
 {
-  if (datasets.has(newName)) {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
   if (it1 == datasets.end() || it2 == datasets.end()) {
@@ -49,8 +44,8 @@ void cmdComplement(
     return;
   }
 
-  const InnerTree &t1 = it1->second;
-  const InnerTree &t2 = it2->second;
+  const InnerTree t1 = it1->second;
+  const InnerTree t2 = it2->second;
 
   InnerTree result;
   for (const auto &kv : t1) {
@@ -68,11 +63,6 @@ void cmdIntersect(
     const std::string &n2,
     OuterTree &datasets)
 {
-  if (datasets.has(newName)) {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
   if (it1 == datasets.end() || it2 == datasets.end()) {
@@ -80,8 +70,8 @@ void cmdIntersect(
     return;
   }
 
-  const InnerTree &t1 = it1->second;
-  const InnerTree &t2 = it2->second;
+  const InnerTree t1 = it1->second;
+  const InnerTree t2 = it2->second;
 
   InnerTree result;
   for (const auto &kv : t1) {
@@ -99,11 +89,6 @@ void cmdUnion(
     const std::string &n2,
     OuterTree &datasets)
 {
-  if (datasets.has(newName)) {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
   const auto it1 = datasets.find(n1);
   const auto it2 = datasets.find(n2);
   if (it1 == datasets.end() || it2 == datasets.end()) {
@@ -111,8 +96,8 @@ void cmdUnion(
     return;
   }
 
-  const InnerTree &t1 = it1->second;
-  const InnerTree &t2 = it2->second;
+  const InnerTree t1 = it1->second;
+  const InnerTree t2 = it2->second;
 
   InnerTree result;
   for (const auto &kv : t2) {
