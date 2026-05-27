@@ -1,8 +1,8 @@
 #ifndef BSTREE_HPP
 #define BSTREE_HPP
 
-#include "bst_node.hpp"
-#include "bst_iterator.hpp"
+#include "bstnode.hpp"
+#include "bstiterator.hpp"
 
 #include <functional>
 #include <stdexcept>

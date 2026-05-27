@@ -1,7 +1,7 @@
 #ifndef BST_ITERATOR_HPP
 #define BST_ITERATOR_HPP
 
-#include "bst_node.hpp"
+#include "bstnode.hpp"
 
 #include <iterator>
 #include <cstddef>
