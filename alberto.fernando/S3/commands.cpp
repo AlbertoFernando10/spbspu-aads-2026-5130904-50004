@@ -144,7 +144,10 @@ void alberto::cmdCut(GraphTable& graphs,
   }
 
   const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
-  g.cutEdge(tok[2], tok[3], w);
+  
+  if (!g.cutEdge(tok[2], tok[3], w)) {
+    std::cout << "<INVALID COMMAND>\n";
+  }
 }
 
 void alberto::cmdCreate(GraphTable& graphs,

@@ -19,7 +19,7 @@ struct Graph {
   EdgeTable   edges{64};
   void ensureVertex(const std::string& v);
   void addEdge(const std::string& src, const std::string& dst, unsigned w);
-  void cutEdge(const std::string& src, const std::string& dst, unsigned w);  // ← ADICIONAR ESTA LINHA
+  bool cutEdge(const std::string& src, const std::string& dst, unsigned w);
   bool hasVertex(const std::string& v) const;
 };
 
