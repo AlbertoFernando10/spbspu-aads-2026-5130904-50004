@@ -63,6 +63,11 @@ void alberto::cmdOutbound(const GraphTable& graphs,
         return a.first < b.first;
       });
 
+  if (out.empty()) {
+    std::cout << "\n";
+    return;
+  }
+
   for (const auto& row : out) {
     std::cout << row.first;
     for (unsigned w : row.second) {
@@ -102,6 +107,11 @@ void alberto::cmdInbound(const GraphTable& graphs,
       [](const auto& a, const auto& b) {
         return a.first < b.first;
       });
+
+  if (in.empty()) {
+    std::cout << "\n";
+    return;
+  }
 
   for (const auto& row : in) {
     std::cout << row.first;
@@ -144,10 +154,7 @@ void alberto::cmdCut(GraphTable& graphs,
   }
 
   const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
-
-  if (!g.cutEdge(tok[2], tok[3], w)) {
-    std::cout << "<INVALID COMMAND>\n";
-  }
+  g.cutEdge(tok[2], tok[3], w);
 }
 
 void alberto::cmdCreate(GraphTable& graphs,
