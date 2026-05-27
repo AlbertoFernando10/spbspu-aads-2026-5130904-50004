@@ -137,44 +137,14 @@ void alberto::cmdCut(GraphTable& graphs,
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
-
   Graph& g = graphs.get(tok[1]);
-
   if (!g.hasVertex(tok[2]) || !g.hasVertex(tok[3])) {
     std::cout << "<INVALID COMMAND>\n";
     return;
   }
 
   const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
-  const EdgeKey k = {tok[2], tok[3]};
-
-  if (!g.edges.has(k)) {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
-  WeightList& wl = g.edges.get(k);
-  WeightList new_wl;
-  bool weight_found = false;
-
-  for (const auto& weight : wl) {
-    if (weight != w) {
-      new_wl.push_back(weight);
-    } else {
-      weight_found = true;
-    }
-  }
-
-  if (!weight_found) {
-    std::cout << "<INVALID COMMAND>\n";
-    return;
-  }
-
-  if (new_wl.empty()) {
-    g.edges.drop(k);
-  } else {
-    wl = std::move(new_wl);
-  }
+  g.cutEdge(tok[2], tok[3], w);
 }
 
 void alberto::cmdCreate(GraphTable& graphs,
