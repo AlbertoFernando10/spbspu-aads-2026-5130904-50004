@@ -47,9 +47,8 @@ void alberto::cmdOutbound(const GraphTable& graphs,
 
   const std::string& src = tok[2];
   std::vector< std::pair< std::string, std::vector< unsigned > > > out;
-
   for (const auto& ep : g.edges) {
-    if (ep.first.first == src) {
+    if (ep.first.first == src && !ep.second.empty()) {
       std::vector< unsigned > ws;
       for (unsigned w : ep.second) {
         ws.push_back(w);
@@ -94,7 +93,7 @@ void alberto::cmdInbound(const GraphTable& graphs,
   std::vector< std::pair< std::string, std::vector< unsigned > > > in;
 
   for (const auto& ep : g.edges) {
-    if (ep.first.second == dst) {
+    if (ep.first.second == dst && !ep.second.empty()) {
       std::vector< unsigned > ws;
       for (unsigned w : ep.second) {
         ws.push_back(w);
@@ -154,7 +153,9 @@ void alberto::cmdCut(GraphTable& graphs,
   }
 
   const unsigned w = static_cast< unsigned >(std::stoul(tok[4]));
-  g.cutEdge(tok[2], tok[3], w);
+  if (!g.cutEdge(tok[2], tok[3], w)) {
+    std::cout << "<INVALID COMMAND>\n";
+  }
 }
 
 void alberto::cmdCreate(GraphTable& graphs,

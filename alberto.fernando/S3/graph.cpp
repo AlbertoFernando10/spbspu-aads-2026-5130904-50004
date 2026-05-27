@@ -36,19 +36,22 @@ bool alberto::Graph::cutEdge(const std::string& src,
   if (!edges.has(k)) {
     return false;
   }
+
   WeightList& wl = edges.get(k);
   WeightList new_wl;
   bool found = false;
   for (const auto& weight : wl) {
-    if (weight != w) {
-      new_wl.push_back(weight);
-    } else {
+    if (!found && weight == w) {
       found = true;
+    } else {
+      new_wl.push_back(weight);
     }
   }
+
   if (!found) {
     return false;
   }
+
   if (new_wl.empty()) {
     edges.drop(k);
   } else {
