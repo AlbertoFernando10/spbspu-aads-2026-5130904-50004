@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <climits>
+#include <stdexcept>
 #include "List.h"
 
 using namespace alberto;
@@ -56,7 +58,11 @@ int main() {
       auto nums_it = nums.cbegin();
       for (size_t i = 0; i < nums.size(); ++i) {
         if (col < nums_it->size()) {
-          alberto::sum(current_sum, (*nums_it)[col]);
+          unsigned long long val = (*nums_it)[col];
+          if (current_sum > ULLONG_MAX - val) {
+            throw std::overflow_error("Overflow");
+          }
+          current_sum += val;
         }
         ++nums_it;
       }
