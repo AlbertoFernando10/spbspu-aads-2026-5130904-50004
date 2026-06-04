@@ -268,3 +268,163 @@ namespace alberto {
       delete temp;
       sz_--;
     }
+    void insert(size_t index, const T& value)
+    {
+      if (index > sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        push_front(value);
+        return;
+      }
+      if (index == sz_) {
+        push_back(value);
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
+      Elem* novo = new Elem(value, atual, anterior);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+    }
+
+    void insert(size_t index, T&& value)
+    {
+      if (index > sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        push_front(std::move(value));
+        return;
+      }
+      if (index == sz_) {
+        push_back(std::move(value));
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
+      Elem* novo = new Elem(std::move(value), atual, anterior);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+    }
+
+    Iter< T > insert(Iter< T > pos, const T& value)
+    {
+      if (pos == begin()) {
+        push_front(value);
+        return begin();
+      }
+      if (pos == end()) {
+        push_back(value);
+        return Iter< T >(tail_);
+      }
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev_;
+      Elem* novo = new Elem(value, atual, anterior);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+      return Iter< T >(novo);
+    }
+
+    Iter< T > insert(Iter< T > pos, T&& value)
+    {
+      if (pos == begin()) {
+        push_front(std::move(value));
+        return begin();
+      }
+      if (pos == end()) {
+        push_back(std::move(value));
+        return Iter< T >(tail_);
+      }
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev_;
+      Elem* novo = new Elem(std::move(value), atual, anterior);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+      return Iter< T >(novo);
+    }
+
+    void erase(size_t index)
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        pop_front();
+        return;
+      }
+      if (index == sz_ - 1) {
+        pop_back();
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
+      Elem* proximo = atual->next_;
+      anterior->next_ = proximo;
+      proximo->prev_ = anterior;
+      delete atual;
+      sz_--;
+    }
+
+    Iter< T > erase(Iter< T > pos)
+    {
+      if (empty() || pos == end()) {
+        throw std::out_of_range("Invalid position");
+      }
+      if (pos == begin()) {
+        pop_front();
+        return begin();
+      }
+      if (pos.ptr == tail_) {
+        pop_back();
+        return end();
+      }
+      Elem* atual = pos.ptr;
+      Elem* anterior = atual->prev_;
+      Elem* proximo = atual->next_;
+      anterior->next_ = proximo;
+      proximo->prev_ = anterior;
+      delete atual;
+      sz_--;
+      return Iter< T >(proximo);
+    }
+
+    void reverse()
+    {
+      if (sz_ <= 1) {
+        return;
+      }
+      Elem* left = head_;
+      Elem* right = tail_;
+      for (size_t i = 0; i < sz_ / 2; ++i) {
+        std::swap(left->data_, right->data_);
+        left = left->next_;
+        right = right->prev_;
+      }
+    }
+  };
+
+  template < class T >
+  inline void sum(T& a, const T& b)
+  {
+    if (std::numeric_limits< T >::max() - b < a) {
+      throw std::overflow_error("Overflow");
+    }
+    a += b;
+  }
+}
+
+#endif
