@@ -104,3 +104,88 @@ namespace alberto {
         pop_front();
       }
     }
+    T& front()
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return head_->data_;
+    }
+
+    const T& front() const
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return head_->data_;
+    }
+
+    T& back()
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return tail_->data_;
+    }
+
+    const T& back() const
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return tail_->data_;
+    }
+
+    T& operator[](size_t index)
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      Elem* curr = head_;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next_;
+      }
+      return curr->data_;
+    }
+
+    const T& operator[](size_t index) const
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      Elem* curr = head_;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next_;
+      }
+      return curr->data_;
+    }
+
+    Iter< T > begin() noexcept
+    {
+      return Iter< T >(head_);
+    }
+
+    Iter< T > end() noexcept
+    {
+      return Iter< T >(nullptr);
+    }
+
+    CIter< T > begin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > end() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
+
+    CIter< T > cbegin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > cend() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
