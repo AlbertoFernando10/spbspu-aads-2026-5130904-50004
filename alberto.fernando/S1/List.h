@@ -189,3 +189,82 @@ namespace alberto {
     {
       return CIter< T >(nullptr);
     }
+    void push_front(const T& value)
+    {
+      Elem* novo = new Elem(value, head_, nullptr);
+      if (empty()) {
+        tail_ = novo;
+      } else {
+        head_->prev_ = novo;
+      }
+      head_ = novo;
+      sz_++;
+    }
+
+    void push_front(T&& value)
+    {
+      Elem* novo = new Elem(std::move(value), head_, nullptr);
+      if (empty()) {
+        tail_ = novo;
+      } else {
+        head_->prev_ = novo;
+      }
+      head_ = novo;
+      sz_++;
+    }
+
+    void pop_front()
+    {
+      if (empty()) {
+        return;
+      }
+      Elem* temp = head_;
+      head_ = head_->next_;
+      if (head_) {
+        head_->prev_ = nullptr;
+      } else {
+        tail_ = nullptr;
+      }
+      delete temp;
+      sz_--;
+    }
+
+    void push_back(const T& value)
+    {
+      Elem* novo = new Elem(value, nullptr, tail_);
+      if (empty()) {
+        head_ = novo;
+      } else {
+        tail_->next_ = novo;
+      }
+      tail_ = novo;
+      sz_++;
+    }
+
+    void push_back(T&& value)
+    {
+      Elem* novo = new Elem(std::move(value), nullptr, tail_);
+      if (empty()) {
+        head_ = novo;
+      } else {
+        tail_->next_ = novo;
+      }
+      tail_ = novo;
+      sz_++;
+    }
+
+    void pop_back()
+    {
+      if (empty()) {
+        return;
+      }
+      Elem* temp = tail_;
+      tail_ = tail_->prev_;
+      if (tail_) {
+        tail_->next_ = nullptr;
+      } else {
+        head_ = nullptr;
+      }
+      delete temp;
+      sz_--;
+    }
