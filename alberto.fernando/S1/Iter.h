@@ -60,3 +60,10 @@ namespace alberto {
     {
       return ptr != other.ptr;
     }
+  private:
+    typename List< T >::Elem* ptr;
+
+    explicit Iter(typename List< T >::Elem* p) noexcept :
+      ptr(p)
+    {}
+  };
