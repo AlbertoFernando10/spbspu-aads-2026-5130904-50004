@@ -3,14 +3,28 @@
 #include "List.h"
 
 using namespace alberto;
+
 int main() {
   List<std::string> names;
   List<List<unsigned long long>> nums;
   std::string nome;
+  if (!(std::cin >> nome)) {
+    std::cout << "0\n";
+    return 0;
+  }
+  names.push_back(nome);
+  nums.push_back(List<unsigned long long>());
+  unsigned long long valor;
+  while (std::cin >> valor) {
+    nums.back().push_back(valor);
+    if (std::cin.peek() == '\n') {
+      break;
+    }
+  }
+  std::cin.clear();
   while (std::cin >> nome) {
     names.push_back(nome);
     nums.push_back(List<unsigned long long>());
-    unsigned long long valor;
     while (std::cin >> valor) {
       nums.back().push_back(valor);
       if (std::cin.peek() == '\n') {
@@ -19,16 +33,6 @@ int main() {
     }
     std::cin.clear();
   }
-  bool first = true;
-  for (auto it = names.cbegin(); it != names.cend(); ++it) {
-    if (!first) std::cout << " ";
-    std::cout << *it;
-    first = false;
-  }
-  std::cout << "\n";
-  if (names.empty()) {
-    return 0;
-  }
   size_t max_size = 0;
   for (auto it = nums.cbegin(); it != nums.cend(); ++it) {
     if (it->size() > max_size) {
@@ -36,7 +40,13 @@ int main() {
     }
   }
   if (max_size == 0) {
-    std::cout << "0\n";
+    bool first = true;
+    for (auto it = names.cbegin(); it != names.cend(); ++it) {
+      if (!first) std::cout << " ";
+      std::cout << *it;
+      first = false;
+    }
+    std::cout << "\n0\n";
     return 0;
   }
   List<unsigned long long> sums;
@@ -56,6 +66,13 @@ int main() {
     std::cerr << "Overflow\n";
     return 1;
   }
+  bool first = true;
+  for (auto it = names.cbegin(); it != names.cend(); ++it) {
+    if (!first) std::cout << " ";
+    std::cout << *it;
+    first = false;
+  }
+  std::cout << "\n";
   for (size_t col = 0; col < max_size; ++col) {
     bool first_in_col = true;
     auto nums_it = nums.cbegin();
