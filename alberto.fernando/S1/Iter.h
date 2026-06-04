@@ -25,3 +25,38 @@ namespace alberto {
     {
       return &(ptr->data_);
     }
+    Iter& operator++() noexcept
+    {
+      ptr = ptr->next_;
+      return *this;
+    }
+
+    Iter& operator--() noexcept
+    {
+      ptr = ptr->prev_;
+      return *this;
+    }
+
+    Iter operator++(int) noexcept
+    {
+      Iter tmp = *this;
+      ptr = ptr->next_;
+      return tmp;
+    }
+
+    Iter operator--(int) noexcept
+    {
+      Iter tmp = *this;
+      ptr = ptr->prev_;
+      return tmp;
+    }
+
+    bool operator==(const Iter& other) const noexcept
+    {
+      return ptr == other.ptr;
+    }
+
+    bool operator!=(const Iter& other) const noexcept
+    {
+      return ptr != other.ptr;
+    }
