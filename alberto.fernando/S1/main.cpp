@@ -19,8 +19,14 @@ int main() {
     }
     std::cin.clear();
   }
+  bool first = true;
+  for (auto it = names.cbegin(); it != names.cend(); ++it) {
+    if (!first) std::cout << " ";
+    std::cout << *it;
+    first = false;
+  }
+  std::cout << "\n";
   if (names.empty()) {
-    std::cout << "0\n";
     return 0;
   }
   size_t max_size = 0;
@@ -50,13 +56,6 @@ int main() {
     std::cerr << "Overflow\n";
     return 1;
   }
-  bool first = true;
-  for (auto it = names.cbegin(); it != names.cend(); ++it) {
-    if (!first) std::cout << " ";
-    std::cout << *it;
-    first = false;
-  }
-  std::cout << "\n";
   for (size_t col = 0; col < max_size; ++col) {
     bool first_in_col = true;
     auto nums_it = nums.cbegin();
