@@ -7,7 +7,7 @@ using namespace alberto;
 int main() {
   List<std::string> names;
   List<List<unsigned long long>> nums;
-std::string nome;
+  std::string nome;
 
   while (std::cin >> nome) {
     names.push_back(nome);
@@ -25,7 +25,7 @@ std::string nome;
 
     std::cin.clear();
   }
-if (names.empty()) {
+  if (names.empty()) {
     std::cout << "0\n";
     return 0;
   }
@@ -37,7 +37,7 @@ if (names.empty()) {
     first = false;
   }
   std::cout << "\n";
-size_t max_size = 0;
+  size_t max_size = 0;
   for (auto it = nums.cbegin(); it != nums.cend(); ++it) {
     if (it->size() > max_size) {
       max_size = it->size();
@@ -48,27 +48,32 @@ size_t max_size = 0;
     std::cout << "0\n";
     return 0;
   }
-List<unsigned long long> sums;
+  List<unsigned long long> sums;
   try {
     for (size_t col = 0; col < max_size; ++col) {
       unsigned long long current_sum = 0;
-      bool first_in_row = true;
+      bool first_in_col = true;
       auto nums_it = nums.cbegin();
+
       for (size_t i = 0; i < nums.size(); ++i) {
         if (col < nums_it->size()) {
           unsigned long long val = (*nums_it)[col];
-          if (!first_in_row) std::cout << " ";
-          std::cout << val;
+
           alberto::sum(current_sum, val);
-          first_in_row = false;
+
+          if (!first_in_col) std::cout << " ";
+          std::cout << val;
+          first_in_col = false;
         }
         ++nums_it;
       }
-      if (!first_in_row) {
+
+      if (!first_in_col) {
         std::cout << "\n";
         sums.push_back(current_sum);
       }
     }
+
     first = true;
     for (auto it = sums.cbegin(); it != sums.cend(); ++it) {
       if (!first) std::cout << " ";
