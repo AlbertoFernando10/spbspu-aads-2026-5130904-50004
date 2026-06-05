@@ -51,27 +51,6 @@ int main() {
     std::cout << "\n0\n";
     return 0;
   }
-  List<unsigned long long> sums;
-  try {
-    for (size_t col = 0; col < max_size; ++col) {
-      unsigned long long current_sum = 0;
-      auto nums_it = nums.cbegin();
-      for (size_t i = 0; i < nums.size(); ++i) {
-        if (col < nums_it->size()) {
-          unsigned long long val = (*nums_it)[col];
-          if (current_sum > ULLONG_MAX - val) {
-            throw std::overflow_error("Overflow");
-          }
-          current_sum += val;
-        }
-        ++nums_it;
-      }
-      sums.push_back(current_sum);
-    }
-  } catch (const std::overflow_error&) {
-    std::cerr << "Overflow\n";
-    return 1;
-  }
   bool first = true;
   for (auto it = names.cbegin(); it != names.cend(); ++it) {
     if (!first) std::cout << " ";
@@ -92,6 +71,29 @@ int main() {
     }
     if (!first_in_col) std::cout << "\n";
   }
+  List<unsigned long long> sums;
+  try {
+    for (size_t col = 0; col < max_size; ++col) {
+      unsigned long long current_sum = 0;
+      auto nums_it = nums.cbegin();
+      for (size_t i = 0; i < nums.size(); ++i) {
+        if (col < nums_it->size()) {
+          unsigned long long val = (*nums_it)[col];
+          if (current_sum > ULLONG_MAX - val) {
+            throw std::overflow_error("Overflow");
+          }
+          current_sum += val;
+        }
+        ++nums_it;
+      }
+      sums.push_back(current_sum);
+    }
+  } catch (const std::overflow_error&) {
+    std::cout.flush();
+    std::cerr << "Overflow\n";
+    return 1;
+  }
+
   first = true;
   for (auto it = sums.cbegin(); it != sums.cend(); ++it) {
     if (!first) std::cout << " ";
