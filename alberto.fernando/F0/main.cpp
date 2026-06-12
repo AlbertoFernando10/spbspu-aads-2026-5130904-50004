@@ -27,3 +27,5 @@ int main()
       std::cout << "<INVALID COMMAND>\n";
     }
   }
+  return 0;
+}
