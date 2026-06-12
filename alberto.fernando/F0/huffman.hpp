@@ -76,3 +76,51 @@ struct CodingEntry {
     entropy_(0.0),
     root_(nullptr)
   {}
+  ~CodingEntry()
+  {
+    destroyTree(root_);
+  }
+
+  CodingEntry(const CodingEntry&) = delete;
+  CodingEntry& operator=(const CodingEntry&) = delete;
+
+  CodingEntry(CodingEntry&& o) noexcept:
+    codes_(std::move(o.codes_)),
+    sourceName_(std::move(o.sourceName_)),
+    uniqueChars_(o.uniqueChars_),
+    originalBits_(o.originalBits_),
+    compressedBits_(o.compressedBits_),
+    entropy_(o.entropy_),
+    root_(o.root_)
+  {
+    o.root_ = nullptr;
+  }
+
+  CodingEntry& operator=(CodingEntry&& o) noexcept
+  {
+    if (this != &o) {
+      destroyTree(root_);
+      codes_ = std::move(o.codes_);
+      sourceName_ = std::move(o.sourceName_);
+      uniqueChars_ = o.uniqueChars_;
+      originalBits_ = o.originalBits_;
+      compressedBits_ = o.compressedBits_;
+      entropy_ = o.entropy_;
+      root_ = o.root_;
+      o.root_ = nullptr;
+    }
+    return *this;
+  }
+
+private:
+
+  static void destroyTree(HuffNode* node)
+  {
+    if (!node) {
+      return;
+    }
+    destroyTree(node->left_);
+    destroyTree(node->right_);
+    delete node;
+  }
+};
