@@ -16,3 +16,46 @@ std::vector< std::string > alberto::tokenize(const std::string& line)
   }
   return tokens;
 }
+void alberto::cmdLocal(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 3) {
+    throw std::invalid_argument("local: wrong number of arguments");
+  }
+  const std::string& name = tok[1];
+  const std::string& filename = tok[2];
+  if (s.texts.has(name)) {
+    throw std::invalid_argument("local: name already in use");
+  }
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    throw std::invalid_argument("local: cannot open file");
+  }
+  std::string content((std::istreambuf_iterator< char >(file)),
+      std::istreambuf_iterator< char >());
+  if (content.empty()) {
+    throw std::invalid_argument("local: file is empty");
+  }
+  s.texts.add(name, TextEntry(content, TextState::RAW, filename));
+  std::cout << "<TEXT LOADED: " << name << ">\n";
+}
+
+void alberto::cmdShowText(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 2) {
+    throw std::invalid_argument("show-text: wrong number of arguments");
+  }
+  const std::string& name = tok[1];
+  if (!s.texts.has(name)) {
+    throw std::invalid_argument("show-text: text not found");
+  }
+  const TextEntry& entry = s.texts.get(name);
+  if (entry.state_ == TextState::RAW) {
+    std::cout << "<TEXT: " << name
+              << ", STATE: raw"
+              << ", FILE: " << entry.sourceFile_ << ">\n";
+  } else {
+    std::cout << "<TEXT: " << name
+              << ", STATE: encoded"
+              << ", CODING: " << entry.codingName_ << ">\n";
+  }
+}
