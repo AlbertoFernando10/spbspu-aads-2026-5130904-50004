@@ -35,3 +35,14 @@ void cmdBuildCoding(Session& s, const std::vector< std::string >& tok);
 void cmdShowCodes(Session& s, const std::vector< std::string >& tok);
 void cmdDropCoding(Session& s, const std::vector< std::string >& tok);
 void cmdListCodings(Session& s, const std::vector< std::string >& tok);
+void cmdEncode(Session& s, const std::vector< std::string >& tok);
+void cmdDecode(Session& s, const std::vector< std::string >& tok);
+void cmdSave(Session& s, const std::vector< std::string >& tok);
+void cmdAnalyze(Session& s, const std::vector< std::string >& tok);
+void cmdCompare(Session& s, const std::vector< std::string >& tok);
+
+void buildCommands(HashTable< std::string, CmdFn, xx_hash >& cmds);
+
+}
+
+#endif
