@@ -130,3 +130,76 @@ void alberto::cmdBuildCoding(Session& s, const std::vector< std::string >& tok)
   std::cout << "<CODING BUILT: " << codingName
             << ", UNIQUE CHARS: " << coding->uniqueChars_ << ">\n";
 }
+void alberto::cmdShowCodes(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 2) {
+    throw std::invalid_argument("show-codes: wrong number of arguments");
+  }
+  const std::string& codingName = tok[1];
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("show-codes: coding not found");
+  }
+  const CodingEntry* const coding = s.codings.get(codingName);
+  std::cout << "<HUFFMAN CODES: " << codingName << ">\n";
+  for (const auto& p : coding->codes_) {
+    std::cout << "'" << p.first << "': code=" << p.second << "\n";
+  }
+}
+
+void alberto::cmdDropCoding(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 2) {
+    throw std::invalid_argument("drop-coding: wrong number of arguments");
+  }
+  const std::string& codingName = tok[1];
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("drop-coding: coding not found");
+  }
+  CodingEntry* const ptr = s.codings.drop(codingName);
+  delete ptr;
+  std::cout << "<CODING DROPPED: " << codingName << ">\n";
+}
+
+void alberto::cmdListCodings(Session& s, const std::vector< std::string >& tok)
+{
+  (void)tok;
+  if (s.codings.empty()) {
+    throw std::invalid_argument("list-codings: no codings built");
+  }
+  std::cout << "<CODINGS: " << s.codings.size() << ">\n";
+  for (const auto& p : s.codings) {
+    const CodingEntry* const c = p.second;
+    std::cout << p.first
+              << " | SOURCE: " << c->sourceName_
+              << " | UNIQUE CHARS: " << c->uniqueChars_ << "\n";
+  }
+}
+
+void alberto::cmdEncode(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 4) {
+    throw std::invalid_argument("encode: wrong number of arguments");
+  }
+  const std::string& srcName = tok[1];
+  const std::string& dstName = tok[2];
+  const std::string& codingName = tok[3];
+  if (!s.texts.has(srcName)) {
+    throw std::invalid_argument("encode: source text not found");
+  }
+  if (s.texts.has(dstName)) {
+    throw std::invalid_argument("encode: result name already in use");
+  }
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("encode: coding not found");
+  }
+  const TextEntry& src = s.texts.get(srcName);
+  if (src.state_ == TextState::ENCODED) {
+    throw std::invalid_argument("encode: source text is already encoded");
+  }
+  const CodingEntry* const coding = s.codings.get(codingName);
+  std::string bits;
+  for (char c : src.content_) {
+    if (!coding->codes_.has(c)) {
+      throw std::invalid_argument("encode: character not in coding");
+    }
+    bits += coding->codes_.get(c);
