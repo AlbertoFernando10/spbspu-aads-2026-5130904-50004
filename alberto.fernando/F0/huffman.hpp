@@ -36,3 +36,43 @@ struct NodeCmp {
     return a->freq_ > b->freq_;
   }
 };
+enum class TextState { RAW, ENCODED };
+
+struct TextEntry {
+  std::string content_;
+  TextState state_;
+  std::string sourceFile_;
+  std::string codingName_;
+
+  TextEntry():
+    state_(TextState::RAW)
+  {}
+
+  TextEntry(const std::string& content,
+      TextState state,
+      const std::string& sourceFile,
+      const std::string& codingName = ""):
+    content_(content),
+    state_(state),
+    sourceFile_(sourceFile),
+    codingName_(codingName)
+  {}
+};
+
+struct CodingEntry {
+  HashTable< char, std::string, xx_hash > codes_;
+  std::string sourceName_;
+  size_t uniqueChars_;
+  size_t originalBits_;
+  size_t compressedBits_;
+  double entropy_;
+  HuffNode* root_;
+
+  CodingEntry():
+    codes_(64),
+    uniqueChars_(0),
+    originalBits_(0),
+    compressedBits_(0),
+    entropy_(0.0),
+    root_(nullptr)
+  {}
