@@ -62,3 +62,29 @@ public:
     }
     return m_buckets[idx].kv.second;
   }
+  void add(const K& key, V value)
+  {
+    if (has(key))
+    {
+      throw std::invalid_argument("HashTable::add: key already exists");
+    }
+    if (m_buckets.empty()
+        || static_cast<double>(m_count + 1) / m_buckets.size() > LOAD_FACTOR)
+    {
+      rehash(m_buckets.size() * 2 + 1);
+    }
+    insertInto(m_buckets, key, std::move(value));
+  }
+
+  V drop(const K& key)
+  {
+    const size_t idx = findIndex(key);
+    if (idx == m_buckets.size())
+    {
+      throw std::invalid_argument("HashTable::drop: key not found");
+    }
+    V value = std::move(m_buckets[idx].kv.second);
+    m_buckets[idx].state = SlotState::DELETED;
+    --m_count;
+    return value;
+  }
