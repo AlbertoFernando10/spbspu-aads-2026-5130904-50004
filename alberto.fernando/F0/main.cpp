@@ -16,3 +16,14 @@ int main()
     if (tok.empty()) {
       continue;
     }
+    const std::string& cmdName = tok[0];
+    if (!cmds.has(cmdName)) {
+      std::cout << "<INVALID COMMAND>\n";
+      continue;
+    }
+    try {
+      cmds.get(cmdName)(session, tok);
+    } catch (const std::exception&) {
+      std::cout << "<INVALID COMMAND>\n";
+    }
+  }
