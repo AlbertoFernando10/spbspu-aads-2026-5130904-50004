@@ -203,3 +203,161 @@ void alberto::cmdEncode(Session& s, const std::vector< std::string >& tok)
       throw std::invalid_argument("encode: character not in coding");
     }
     bits += coding->codes_.get(c);
+static std::string decodeWithTree(const std::string& bits, alberto::HuffNode* const root)
+{
+  if (!root) {
+    throw std::invalid_argument("decode: empty coding tree");
+  }
+  if (!root->left_ && !root->right_) {
+    std::string result;
+    for (char b : bits) {
+      if (b != '0') {
+        throw std::invalid_argument("decode: invalid bit sequence");
+      }
+      result += root->ch_;
+    }
+    return result;
+  }
+  std::string result;
+  alberto::HuffNode* cur = root;
+  for (char b : bits) {
+    if (b == '0') {
+      cur = cur->left_;
+    } else if (b == '1') {
+      cur = cur->right_;
+    } else {
+      throw std::invalid_argument("decode: invalid bit sequence");
+    }
+    if (!cur) {
+      throw std::invalid_argument("decode: invalid bit sequence");
+    }
+    if (!cur->left_ && !cur->right_) {
+      result += cur->ch_;
+      cur = root;
+    }
+  }
+  if (cur != root) {
+    throw std::invalid_argument("decode: incomplete bit sequence");
+  }
+  return result;
+}
+
+void alberto::cmdDecode(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 4) {
+    throw std::invalid_argument("decode: wrong number of arguments");
+  }
+  const std::string& srcName = tok[1];
+  const std::string& dstName = tok[2];
+  const std::string& codingName = tok[3];
+  if (!s.texts.has(srcName)) {
+    throw std::invalid_argument("decode: source text not found");
+  }
+  if (s.texts.has(dstName)) {
+    throw std::invalid_argument("decode: result name already in use");
+  }
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("decode: coding not found");
+  }
+  const TextEntry& src = s.texts.get(srcName);
+  if (src.state_ != TextState::ENCODED) {
+    throw std::invalid_argument("decode: source text is not encoded");
+  }
+  const CodingEntry* const coding = s.codings.get(codingName);
+  const std::string decoded = decodeWithTree(src.content_, coding->root_);
+  s.texts.add(dstName, TextEntry(decoded, TextState::RAW, "", ""));
+  std::cout << "<DECODED: " << srcName << " -> " << dstName
+            << " USING " << codingName << ">\n";
+}
+
+void alberto::cmdSave(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 3) {
+    throw std::invalid_argument("save: wrong number of arguments");
+  }
+  const std::string& name = tok[1];
+  const std::string& filename = tok[2];
+  if (!s.texts.has(name)) {
+    throw std::invalid_argument("save: text not found");
+  }
+  std::ofstream file(filename);
+  if (!file.is_open()) {
+    throw std::invalid_argument("save: cannot open file for writing");
+  }
+  file << s.texts.get(name).content_;
+  std::cout << "<SAVED: " << name << " -> " << filename << ">\n";
+}
+
+void alberto::cmdAnalyze(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 2) {
+    throw std::invalid_argument("analyze: wrong number of arguments");
+  }
+  const std::string& codingName = tok[1];
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("analyze: coding not found");
+  }
+  const CodingEntry* const c = s.codings.get(codingName);
+  const double ratio = c->originalBits_ > 0
+      ? 100.0 * (1.0 - static_cast< double >(c->compressedBits_)
+          / c->originalBits_)
+      : 0.0;
+  std::cout << "<COMPRESSION ANALYSIS: " << codingName << ">\n"
+            << "ORIGINAL SIZE:   " << c->originalBits_ << " bits\n"
+            << "COMPRESSED SIZE: " << c->compressedBits_ << " bits\n"
+            << std::fixed << std::setprecision(2)
+            << "RATIO:           " << ratio << "% reduction\n"
+            << "ENTROPY:         " << c->entropy_ << " bits/char\n";
+}
+
+void alberto::cmdCompare(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 3) {
+    throw std::invalid_argument("compare: wrong number of arguments");
+  }
+  const std::string& name1 = tok[1];
+  const std::string& name2 = tok[2];
+  if (!s.codings.has(name1)) {
+    throw std::invalid_argument("compare: first coding not found");
+  }
+  if (!s.codings.has(name2)) {
+    throw std::invalid_argument("compare: second coding not found");
+  }
+  const CodingEntry* const c1 = s.codings.get(name1);
+  const CodingEntry* const c2 = s.codings.get(name2);
+  const double r1 = c1->originalBits_ > 0
+      ? 100.0 * (1.0 - static_cast< double >(c1->compressedBits_)
+          / c1->originalBits_)
+      : 0.0;
+  const double r2 = c2->originalBits_ > 0
+      ? 100.0 * (1.0 - static_cast< double >(c2->compressedBits_)
+          / c2->originalBits_)
+      : 0.0;
+  std::cout << "<COMPRESSION COMPARISON>\n"
+            << std::fixed << std::setprecision(2)
+            << name1
+            << " | ORIGINAL: " << c1->originalBits_ << " bits"
+            << " | COMPRESSED: " << c1->compressedBits_ << " bits"
+            << " | RATIO: " << r1 << "% reduction\n"
+            << name2
+            << " | ORIGINAL: " << c2->originalBits_ << " bits"
+            << " | COMPRESSED: " << c2->compressedBits_ << " bits"
+            << " | RATIO: " << r2 << "% reduction\n";
+}
+
+void alberto::buildCommands(HashTable< std::string, CmdFn, xx_hash >& cmds)
+{
+  cmds.add("local", cmdLocal);
+  cmds.add("show-text", cmdShowText);
+  cmds.add("drop-text", cmdDropText);
+  cmds.add("list-texts", cmdListTexts);
+  cmds.add("build-coding", cmdBuildCoding);
+  cmds.add("show-codes", cmdShowCodes);
+  cmds.add("drop-coding", cmdDropCoding);
+  cmds.add("list-codings", cmdListCodings);
+  cmds.add("encode", cmdEncode);
+  cmds.add("decode", cmdDecode);
+  cmds.add("save", cmdSave);
+  cmds.add("analyze", cmdAnalyze);
+  cmds.add("compare", cmdCompare);
+}
