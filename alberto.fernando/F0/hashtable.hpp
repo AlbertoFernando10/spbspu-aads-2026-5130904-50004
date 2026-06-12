@@ -88,3 +88,63 @@ public:
     --m_count;
     return value;
   }
+  class iterator
+  {
+  public:
+    iterator(const std::vector<typename HashTable::Slot>* buckets, size_t index)
+      : m_buckets(buckets)
+      , m_index(index)
+    {
+      advance();
+    }
+
+    const value_type& operator*() const
+    {
+      return (*m_buckets)[m_index].kv;
+    }
+
+    const value_type* operator->() const
+    {
+      return &(*m_buckets)[m_index].kv;
+    }
+
+    iterator& operator++()
+    {
+      ++m_index;
+      advance();
+      return *this;
+    }
+
+    bool operator==(const iterator& other) const
+    {
+      return m_index == other.m_index;
+    }
+
+    bool operator!=(const iterator& other) const
+    {
+      return m_index != other.m_index;
+    }
+
+  private:
+    const std::vector<typename HashTable::Slot>* m_buckets;
+    size_t m_index;
+
+    void advance()
+    {
+      while (m_index < m_buckets->size()
+             && (*m_buckets)[m_index].state != HashTable::SlotState::OCCUPIED)
+      {
+        ++m_index;
+      }
+    }
+  };
+
+  iterator begin() const
+  {
+    return iterator(&m_buckets, 0);
+  }
+
+  iterator end() const
+  {
+    return iterator(&m_buckets, m_buckets.size());
+  }
