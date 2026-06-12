@@ -124,3 +124,69 @@ private:
     delete node;
   }
 };
+using TextTable = HashTable< std::string, TextEntry, xx_hash >;
+using CodingTable = HashTable< std::string, CodingEntry*, xx_hash >;
+
+inline HashTable< char, size_t, xx_hash > buildFreqTable(const std::string& text)
+{
+  HashTable< char, size_t, xx_hash > freq(64);
+  for (char c : text) {
+    if (freq.has(c)) {
+      ++freq.get(c);
+    } else {
+      freq.add(c, 1);
+    }
+  }
+  return freq;
+}
+
+inline void buildCodesHelper(HuffNode* node,
+    const std::string& prefix,
+    HashTable< char, std::string, xx_hash >& codes)
+{
+  if (!node) {
+    return;
+  }
+  if (!node->left_ && !node->right_) {
+    codes.add(node->ch_, prefix.empty() ? "0" : prefix);
+    return;
+  }
+  buildCodesHelper(node->left_, prefix + "0", codes);
+  buildCodesHelper(node->right_, prefix + "1", codes);
+}
+
+inline HuffNode* buildTree(const HashTable< char, size_t, xx_hash >& freq)
+{
+  std::priority_queue< HuffNode*, std::vector< HuffNode* >, NodeCmp > pq;
+  for (const auto& p : freq) {
+    pq.push(new HuffNode(p.first, p.second));
+  }
+  if (pq.empty()) {
+    return nullptr;
+  }
+  while (pq.size() > 1) {
+    HuffNode* const l = pq.top();
+    pq.pop();
+    HuffNode* const r = pq.top();
+    pq.pop();
+    pq.push(new HuffNode(l->freq_ + r->freq_, l, r));
+  }
+  return pq.top();
+}
+
+inline double calcEntropy(const HashTable< char, size_t, xx_hash >& freq,
+    size_t total)
+{
+  double h = 0.0;
+  for (const auto& p : freq) {
+    if (p.second > 0) {
+      const double prob = static_cast< double >(p.second) / total;
+      h -= prob * (std::log(prob) / std::log(2.0));
+    }
+  }
+  return h;
+}
+
+}
+
+#endif
