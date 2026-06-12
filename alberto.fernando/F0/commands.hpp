@@ -24,3 +24,6 @@ struct Session {
     }
   }
 };
+using CmdFn = std::function< void(Session&, const std::vector< std::string >&) >;
+
+std::vector< std::string > tokenize(const std::string& line);
