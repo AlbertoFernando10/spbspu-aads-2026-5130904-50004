@@ -16,6 +16,7 @@ std::vector< std::string > alberto::tokenize(const std::string& line)
   }
   return tokens;
 }
+
 void alberto::cmdLocal(Session& s, const std::vector< std::string >& tok)
 {
   if (tok.size() != 3) {
@@ -59,6 +60,7 @@ void alberto::cmdShowText(Session& s, const std::vector< std::string >& tok)
               << ", CODING: " << entry.codingName_ << ">\n";
   }
 }
+
 void alberto::cmdDropText(Session& s, const std::vector< std::string >& tok)
 {
   if (tok.size() != 2) {
@@ -130,6 +132,7 @@ void alberto::cmdBuildCoding(Session& s, const std::vector< std::string >& tok)
   std::cout << "<CODING BUILT: " << codingName
             << ", UNIQUE CHARS: " << coding->uniqueChars_ << ">\n";
 }
+
 void alberto::cmdShowCodes(Session& s, const std::vector< std::string >& tok)
 {
   if (tok.size() != 2) {
@@ -175,34 +178,6 @@ void alberto::cmdListCodings(Session& s, const std::vector< std::string >& tok)
   }
 }
 
-void alberto::cmdEncode(Session& s, const std::vector< std::string >& tok)
-{
-  if (tok.size() != 4) {
-    throw std::invalid_argument("encode: wrong number of arguments");
-  }
-  const std::string& srcName = tok[1];
-  const std::string& dstName = tok[2];
-  const std::string& codingName = tok[3];
-  if (!s.texts.has(srcName)) {
-    throw std::invalid_argument("encode: source text not found");
-  }
-  if (s.texts.has(dstName)) {
-    throw std::invalid_argument("encode: result name already in use");
-  }
-  if (!s.codings.has(codingName)) {
-    throw std::invalid_argument("encode: coding not found");
-  }
-  const TextEntry& src = s.texts.get(srcName);
-  if (src.state_ == TextState::ENCODED) {
-    throw std::invalid_argument("encode: source text is already encoded");
-  }
-  const CodingEntry* const coding = s.codings.get(codingName);
-  std::string bits;
-  for (char c : src.content_) {
-    if (!coding->codes_.has(c)) {
-      throw std::invalid_argument("encode: character not in coding");
-    }
-    bits += coding->codes_.get(c);
 static std::string decodeWithTree(const std::string& bits, alberto::HuffNode* const root)
 {
   if (!root) {
@@ -240,6 +215,40 @@ static std::string decodeWithTree(const std::string& bits, alberto::HuffNode* co
     throw std::invalid_argument("decode: incomplete bit sequence");
   }
   return result;
+}
+
+void alberto::cmdEncode(Session& s, const std::vector< std::string >& tok)
+{
+  if (tok.size() != 4) {
+    throw std::invalid_argument("encode: wrong number of arguments");
+  }
+  const std::string& srcName = tok[1];
+  const std::string& dstName = tok[2];
+  const std::string& codingName = tok[3];
+  if (!s.texts.has(srcName)) {
+    throw std::invalid_argument("encode: source text not found");
+  }
+  if (s.texts.has(dstName)) {
+    throw std::invalid_argument("encode: result name already in use");
+  }
+  if (!s.codings.has(codingName)) {
+    throw std::invalid_argument("encode: coding not found");
+  }
+  const TextEntry& src = s.texts.get(srcName);
+  if (src.state_ == TextState::ENCODED) {
+    throw std::invalid_argument("encode: source text is already encoded");
+  }
+  const CodingEntry* const coding = s.codings.get(codingName);
+  std::string bits;
+  for (char c : src.content_) {
+    if (!coding->codes_.has(c)) {
+      throw std::invalid_argument("encode: character not in coding");
+    }
+    bits += coding->codes_.get(c);
+  }
+  s.texts.add(dstName, TextEntry(bits, TextState::ENCODED, "", codingName));
+  std::cout << "<ENCODED: " << srcName << " -> " << dstName
+            << " USING " << codingName << ">\n";
 }
 
 void alberto::cmdDecode(Session& s, const std::vector< std::string >& tok)
