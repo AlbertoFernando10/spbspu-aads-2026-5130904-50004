@@ -32,7 +32,6 @@ struct xx_hash
     return static_cast<size_t>(hash);
   }
 };
-};
 
 }
 
