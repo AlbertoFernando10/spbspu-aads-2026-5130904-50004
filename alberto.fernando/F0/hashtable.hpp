@@ -17,6 +17,19 @@ class HashTable
 public:
   using value_type = std::pair<K, V>;
 
+  enum class SlotState : uint8_t
+  {
+    EMPTY,
+    OCCUPIED,
+    DELETED
+  };
+
+  struct Slot
+  {
+    value_type kv;
+    SlotState state = SlotState::EMPTY;
+  };
+
   explicit HashTable(size_t initial_cap = 16)
     : m_buckets(initial_cap < 1 ? 16 : initial_cap)
   {
@@ -91,7 +104,7 @@ public:
   class iterator
   {
   public:
-    iterator(const std::vector<typename HashTable::Slot>* buckets, size_t index)
+    iterator(const std::vector<Slot>* buckets, size_t index)
       : m_buckets(buckets)
       , m_index(index)
     {
@@ -126,13 +139,13 @@ public:
     }
 
   private:
-    const std::vector<typename HashTable::Slot>* m_buckets;
+    const std::vector<Slot>* m_buckets;
     size_t m_index;
 
     void advance()
     {
       while (m_index < m_buckets->size()
-             && (*m_buckets)[m_index].state != HashTable::SlotState::OCCUPIED)
+             && (*m_buckets)[m_index].state != SlotState::OCCUPIED)
       {
         ++m_index;
       }
@@ -149,19 +162,6 @@ public:
     return iterator(&m_buckets, m_buckets.size());
   }
 private:
-  enum class SlotState : uint8_t
-  {
-    EMPTY,
-    OCCUPIED,
-    DELETED
-  };
-
-  struct Slot
-  {
-    value_type kv;
-    SlotState state = SlotState::EMPTY;
-  };
-
   static constexpr double LOAD_FACTOR = 0.65;
 
   std::vector<Slot> m_buckets;
@@ -171,7 +171,7 @@ private:
   void rehash(size_t new_capacity)
   {
     std::vector<Slot> old = std::move(m_buckets);
-    m_buckets.assign(new_capacity, Slot {});
+    m_buckets.assign(new_capacity, Slot{});
     m_count = 0;
     for (const auto& slot : old)
     {
@@ -228,5 +228,4 @@ private:
 };
 
 }
-
 #endif
