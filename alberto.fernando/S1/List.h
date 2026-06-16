@@ -5,42 +5,39 @@
 #include <stdexcept>
 #include <utility>
 #include <limits>
-#include "Iter.h"
+#include "iter.h"
 
 namespace alberto {
   template < class T >
-  class List {
+  class List
+  {
   public:
-    struct Elem {
+    struct Elem
+    {
       T data_;
       Elem* next_;
       Elem* prev_;
 
-      explicit Elem(const T& val, Elem* nxt = nullptr, Elem* prv = nullptr) :
+      explicit Elem(const T& val, Elem* nxt = nullptr, Elem* prv = nullptr):
         data_(val),
         next_(nxt),
         prev_(prv)
       {}
 
-      explicit Elem(T&& val, Elem* nxt = nullptr, Elem* prv = nullptr) :
+      explicit Elem(T&& val, Elem* nxt = nullptr, Elem* prv = nullptr):
         data_(std::move(val)),
         next_(nxt),
         prev_(prv)
       {}
     };
 
-  private:
-    Elem* head_;
-    Elem* tail_;
-    size_t sz_;
-  public:
-    List() noexcept :
+    List() noexcept:
       head_(nullptr),
       tail_(nullptr),
       sz_(0)
     {}
 
-    List(const List& other) :
+    List(const List& other):
       head_(nullptr),
       tail_(nullptr),
       sz_(0)
@@ -50,7 +47,7 @@ namespace alberto {
       }
     }
 
-    List(List&& other) noexcept :
+    List(List&& other) noexcept:
       head_(other.head_),
       tail_(other.tail_),
       sz_(other.sz_)
@@ -88,6 +85,36 @@ namespace alberto {
       std::swap(sz_, other.sz_);
     }
 
+    Iter< T > begin() noexcept
+    {
+      return Iter< T >(head_);
+    }
+
+    Iter< T > end() noexcept
+    {
+      return Iter< T >(nullptr);
+    }
+
+    CIter< T > begin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > end() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
+
+    CIter< T > cbegin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > cend() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
+
     bool empty() const noexcept
     {
       return sz_ == 0;
@@ -98,12 +125,6 @@ namespace alberto {
       return sz_;
     }
 
-    void clear()
-    {
-      while (!empty()) {
-        pop_front();
-      }
-    }
     T& front()
     {
       if (empty()) {
@@ -160,35 +181,6 @@ namespace alberto {
       return curr->data_;
     }
 
-    Iter< T > begin() noexcept
-    {
-      return Iter< T >(head_);
-    }
-
-    Iter< T > end() noexcept
-    {
-      return Iter< T >(nullptr);
-    }
-
-    CIter< T > begin() const noexcept
-    {
-      return CIter< T >(head_);
-    }
-
-    CIter< T > end() const noexcept
-    {
-      return CIter< T >(nullptr);
-    }
-
-    CIter< T > cbegin() const noexcept
-    {
-      return CIter< T >(head_);
-    }
-
-    CIter< T > cend() const noexcept
-    {
-      return CIter< T >(nullptr);
-    }
     void push_front(const T& value)
     {
       Elem* novo = new Elem(value, head_, nullptr);
@@ -268,6 +260,7 @@ namespace alberto {
       delete temp;
       sz_--;
     }
+
     void insert(size_t index, const T& value)
     {
       if (index > sz_) {
@@ -402,6 +395,13 @@ namespace alberto {
       return Iter< T >(proximo);
     }
 
+    void clear()
+    {
+      while (!empty()) {
+        pop_front();
+      }
+    }
+
     void reverse()
     {
       if (sz_ <= 1) {
@@ -415,6 +415,11 @@ namespace alberto {
         right = right->prev_;
       }
     }
+
+  private:
+    Elem* head_;
+    Elem* tail_;
+    size_t sz_;
   };
 
   template < class T >
