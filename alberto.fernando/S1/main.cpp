@@ -1,21 +1,21 @@
 #include <iostream>
 #include <string>
 #include <climits>
-#include <stdexcept>
 #include "List.h"
 
 using namespace alberto;
 
-int main() {
-  List<std::string> names;
-  List<List<unsigned long long>> nums;
+int main()
+{
+  List< std::string > names;
+  List< List< unsigned long long > > nums;
   std::string nome;
   if (!(std::cin >> nome)) {
     std::cout << "0\n";
     return 0;
   }
   names.push_back(nome);
-  nums.push_back(List<unsigned long long>());
+  nums.push_back(List< unsigned long long >());
   unsigned long long valor;
   while (std::cin >> valor) {
     nums.back().push_back(valor);
@@ -26,7 +26,7 @@ int main() {
   std::cin.clear();
   while (std::cin >> nome) {
     names.push_back(nome);
-    nums.push_back(List<unsigned long long>());
+    nums.push_back(List< unsigned long long >());
     while (std::cin >> valor) {
       nums.back().push_back(valor);
       if (std::cin.peek() == '\n') {
@@ -44,7 +44,9 @@ int main() {
   if (max_size == 0) {
     bool first = true;
     for (auto it = names.cbegin(); it != names.cend(); ++it) {
-      if (!first) std::cout << " ";
+      if (!first) {
+        std::cout << " ";
+      }
       std::cout << *it;
       first = false;
     }
@@ -53,7 +55,9 @@ int main() {
   }
   bool first = true;
   for (auto it = names.cbegin(); it != names.cend(); ++it) {
-    if (!first) std::cout << " ";
+    if (!first) {
+      std::cout << " ";
+    }
     std::cout << *it;
     first = false;
   }
@@ -63,40 +67,40 @@ int main() {
     auto nums_it = nums.cbegin();
     for (size_t i = 0; i < nums.size(); ++i) {
       if (col < nums_it->size()) {
-        if (!first_in_col) std::cout << " ";
+        if (!first_in_col) {
+          std::cout << " ";
+        }
         std::cout << (*nums_it)[col];
         first_in_col = false;
       }
       ++nums_it;
     }
-    if (!first_in_col) std::cout << "\n";
-  }
-  List<unsigned long long> sums;
-  try {
-    for (size_t col = 0; col < max_size; ++col) {
-      unsigned long long current_sum = 0;
-      auto nums_it = nums.cbegin();
-      for (size_t i = 0; i < nums.size(); ++i) {
-        if (col < nums_it->size()) {
-          unsigned long long val = (*nums_it)[col];
-          if (current_sum > ULLONG_MAX - val) {
-            throw std::overflow_error("Overflow");
-          }
-          current_sum += val;
-        }
-        ++nums_it;
-      }
-      sums.push_back(current_sum);
+    if (!first_in_col) {
+      std::cout << "\n";
     }
-  } catch (const std::overflow_error&) {
-    std::cout.flush();
-    std::cerr << "Overflow\n";
-    return 1;
   }
-
+  List< unsigned long long > sums;
+  for (size_t col = 0; col < max_size; ++col) {
+    unsigned long long current_sum = 0;
+    auto nums_it = nums.cbegin();
+    for (size_t i = 0; i < nums.size(); ++i) {
+      if (col < nums_it->size()) {
+        unsigned long long val = (*nums_it)[col];
+        if (current_sum > ULLONG_MAX - val) {
+          std::cerr << "Overflow\n";
+          return 1;
+        }
+        current_sum += val;
+      }
+      ++nums_it;
+    }
+    sums.push_back(current_sum);
+  }
   first = true;
   for (auto it = sums.cbegin(); it != sums.cend(); ++it) {
-    if (!first) std::cout << " ";
+    if (!first) {
+      std::cout << " ";
+    }
     std::cout << *it;
     first = false;
   }
