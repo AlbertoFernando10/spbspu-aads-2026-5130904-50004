@@ -42,40 +42,36 @@ int main()
     }
   }
   if (max_size == 0) {
-    bool first = true;
-    for (auto it = names.cbegin(); it != names.cend(); ++it) {
-      if (!first) {
-        std::cout << " ";
-      }
-      std::cout << *it;
-      first = false;
+    auto names_it = names.cbegin();
+    std::cout << *names_it;
+    ++names_it;
+    for (; names_it != names.cend(); ++names_it) {
+      std::cout << " " << *names_it;
     }
     std::cout << "\n0\n";
     return 0;
   }
-  bool first = true;
-  for (auto it = names.cbegin(); it != names.cend(); ++it) {
-    if (!first) {
-      std::cout << " ";
-    }
-    std::cout << *it;
-    first = false;
+  auto names_it = names.cbegin();
+  std::cout << *names_it;
+  ++names_it;
+  for (; names_it != names.cend(); ++names_it) {
+    std::cout << " " << *names_it;
   }
   std::cout << "\n";
   for (size_t col = 0; col < max_size; ++col) {
-    bool first_in_col = true;
     auto nums_it = nums.cbegin();
+    bool printed = false;
     for (size_t i = 0; i < nums.size(); ++i) {
       if (col < nums_it->size()) {
-        if (!first_in_col) {
+        if (printed) {
           std::cout << " ";
         }
         std::cout << (*nums_it)[col];
-        first_in_col = false;
+        printed = true;
       }
       ++nums_it;
     }
-    if (!first_in_col) {
+    if (printed) {
       std::cout << "\n";
     }
   }
@@ -96,13 +92,11 @@ int main()
     }
     sums.push_back(current_sum);
   }
-  first = true;
-  for (auto it = sums.cbegin(); it != sums.cend(); ++it) {
-    if (!first) {
-      std::cout << " ";
-    }
-    std::cout << *it;
-    first = false;
+  auto sums_it = sums.cbegin();
+  std::cout << *sums_it;
+  ++sums_it;
+  for (; sums_it != sums.cend(); ++sums_it) {
+    std::cout << " " << *sums_it;
   }
   std::cout << "\n";
   return 0;
