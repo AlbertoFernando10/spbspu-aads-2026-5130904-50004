@@ -81,45 +81,61 @@ Queue< std::string > infix_to_postfix(const std::string& line)
   size_t pos = 0;
   while (pos <= line.size()) {
     size_t end = line.find(' ', pos);
-    if (end == std::string::npos) end = line.size();
+    if (end == std::string::npos) {
+      end = line.size();
+    }
 
     std::string tok = line.substr(pos, end - pos);
     pos = end + 1;
 
-    if (tok.empty()) continue;
+    if (tok.empty()) {
+      continue;
+    }
 
     if (tok == "(") {
       ops.push(tok);
     } else if (tok == ")") {
       while (!ops.empty() && ops.top() != "(") {
-        output.push(ops.drop());
+        output.push(ops.top());
+        ops.pop();
       }
-      if (ops.empty())
+      if (ops.empty()) {
         throw std::runtime_error("mismatched parentheses");
-      ops.drop();
+      }
+      ops.pop();
     } else if (is_operator(tok)) {
       while (!ops.empty() &&
              ops.top() != "(" &&
              precedence(ops.top()) >= precedence(tok)) {
-        output.push(ops.drop());
+        output.push(ops.top());
+        ops.pop();
       }
       ops.push(tok);
     } else {
       size_t i = 0;
-      if (!tok.empty() && (tok[0] == '-' || tok[0] == '+')) ++i;
+      if (!tok.empty() && (tok[0] == '-' || tok[0] == '+')) {
+        ++i;
+      }
       bool valid = (i < tok.size());
-      for (; i < tok.size(); ++i)
-        if (tok[i] < '0' || tok[i] > '9') { valid = false; break; }
-      if (!valid)
+      for (; i < tok.size(); ++i) {
+        if (tok[i] < '0' || tok[i] > '9') {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid) {
         throw std::runtime_error("invalid token: \"" + tok + "\"");
+      }
       output.push(tok);
     }
   }
 
   while (!ops.empty()) {
-    if (ops.top() == "(" || ops.top() == ")")
+    if (ops.top() == "(" || ops.top() == ")") {
       throw std::runtime_error("mismatched parentheses");
-    output.push(ops.drop());
+    }
+    output.push(ops.top());
+    ops.pop();
   }
 
   return output;
@@ -130,31 +146,43 @@ long long eval_postfix(Queue< std::string >& pf)
   Stack< long long > stk;
 
   while (!pf.empty()) {
-    std::string tok = pf.drop();
+    std::string tok = pf.front();
+    pf.pop();
     if (is_operator(tok)) {
-      if (stk.size() < 2)
+      if (stk.size() < 2) {
         throw std::runtime_error("invalid expression (not enough operands)");
-      long long b = stk.drop();
-      long long a = stk.drop();
+      }
+      long long b = stk.top();
+      stk.pop();
+      long long a = stk.top();
+      stk.pop();
       stk.push(apply_op(tok, a, b));
     } else {
       bool neg = false;
       size_t i = 0;
-      if (!tok.empty() && tok[0] == '-') { neg = true; ++i; }
-      else if (!tok.empty() && tok[0] == '+') ++i;
+      if (!tok.empty() && tok[0] == '-') {
+        neg = true;
+        ++i;
+      } else if (!tok.empty() && tok[0] == '+') {
+        ++i;
+      }
 
       long long val = 0;
       for (; i < tok.size(); ++i) {
-        if (tok[i] < '0' || tok[i] > '9')
+        if (tok[i] < '0' || tok[i] > '9') {
           throw std::runtime_error("invalid number: " + tok);
+        }
         val = val * 10 + (tok[i] - '0');
       }
       stk.push(neg ? -val : val);
     }
   }
-  if (stk.size() != 1)
+  if (stk.size() != 1) {
     throw std::runtime_error("invalid expression (leftover operands)");
-  return stk.drop();
+  }
+  const long long result = stk.top();
+  stk.pop();
+  return result;
 }
 
 long long process_line(const std::string& line)
