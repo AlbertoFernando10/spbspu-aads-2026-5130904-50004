@@ -3,45 +3,43 @@
 
 #include "huffman.hpp"
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace alberto {
 
-struct Session {
-  TextTable texts;
-  CodingTable codings;
+constexpr size_t SESSION_TABLE_CAP = 32;
 
-  Session():
-    texts(32),
-    codings(32)
+struct Session
+{
+  TextTable m_texts;
+  CodingTable m_codings;
+
+  Session() :
+    m_texts(SESSION_TABLE_CAP),
+    m_codings(SESSION_TABLE_CAP)
   {}
-
-  ~Session()
-  {
-    for (auto& p : codings) {
-      delete p.second;
-    }
-  }
+  ~Session() = default;
 };
-using CmdFn = std::function< void(Session&, const std::vector< std::string >&) >;
 
-std::vector< std::string > tokenize(const std::string& line);
-void cmdLocal(Session& s, const std::vector< std::string >& tok);
-void cmdShowText(Session& s, const std::vector< std::string >& tok);
-void cmdDropText(Session& s, const std::vector< std::string >& tok);
-void cmdListTexts(Session& s, const std::vector< std::string >& tok);
-void cmdBuildCoding(Session& s, const std::vector< std::string >& tok);
-void cmdShowCodes(Session& s, const std::vector< std::string >& tok);
-void cmdDropCoding(Session& s, const std::vector< std::string >& tok);
-void cmdListCodings(Session& s, const std::vector< std::string >& tok);
-void cmdEncode(Session& s, const std::vector< std::string >& tok);
-void cmdDecode(Session& s, const std::vector< std::string >& tok);
-void cmdSave(Session& s, const std::vector< std::string >& tok);
-void cmdAnalyze(Session& s, const std::vector< std::string >& tok);
-void cmdCompare(Session& s, const std::vector< std::string >& tok);
+using CmdFn = std::function< void(Session &, const std::vector< std::string > &) >;
 
-void buildCommands(HashTable< std::string, CmdFn, xx_hash >& cmds);
+void cmdLocal(Session & s, const std::vector< std::string > & tok);
+void cmdShowText(Session & s, const std::vector< std::string > & tok);
+void cmdDropText(Session & s, const std::vector< std::string > & tok);
+void cmdListTexts(Session & s, const std::vector< std::string > & tok);
+void cmdBuildCoding(Session & s, const std::vector< std::string > & tok);
+void cmdShowCodes(Session & s, const std::vector< std::string > & tok);
+void cmdDropCoding(Session & s, const std::vector< std::string > & tok);
+void cmdListCodings(Session & s, const std::vector< std::string > & tok);
+void cmdEncode(Session & s, const std::vector< std::string > & tok);
+void cmdDecode(Session & s, const std::vector< std::string > & tok);
+void cmdSave(Session & s, const std::vector< std::string > & tok);
+void cmdAnalyze(Session & s, const std::vector< std::string > & tok);
+void cmdCompare(Session & s, const std::vector< std::string > & tok);
+
+void buildCommands(HashTable< std::string, CmdFn, xx_hash > & cmds);
 
 }
 
