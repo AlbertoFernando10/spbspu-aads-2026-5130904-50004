@@ -2,190 +2,174 @@
 #define HUFFMAN_HPP
 
 #include "hashtable.hpp"
-#include <cmath>
 #include <cstddef>
-#include <queue>
+#include <memory>
 #include <string>
-#include <vector>
 
 namespace alberto {
-struct HuffNode {
-  char ch_;
-  size_t freq_;
-  HuffNode* left_;
-  HuffNode* right_;
 
-  HuffNode(char c, size_t f):
-    ch_(c),
-    freq_(f),
-    left_(nullptr),
-    right_(nullptr)
+constexpr size_t CODING_HASH_CAP = 64;
+
+struct HuffNode
+{
+  char m_ch;
+  size_t m_freq;
+  std::unique_ptr< HuffNode > m_left;
+  std::unique_ptr< HuffNode > m_right;
+
+  HuffNode(char c, size_t f) :
+    m_ch(c),
+    m_freq(f),
+    m_left(nullptr),
+    m_right(nullptr)
   {}
 
-  HuffNode(size_t f, HuffNode* l, HuffNode* r):
-    ch_('\0'),
-    freq_(f),
-    left_(l),
-    right_(r)
-  {}
-};
-
-struct NodeCmp {
-  bool operator()(const HuffNode* a, const HuffNode* b) const
-  {
-    return a->freq_ > b->freq_;
-  }
-};
-enum class TextState { RAW, ENCODED };
-
-struct TextEntry {
-  std::string content_;
-  TextState state_;
-  std::string sourceFile_;
-  std::string codingName_;
-
-  TextEntry():
-    state_(TextState::RAW)
-  {}
-
-  TextEntry(const std::string& content,
-      TextState state,
-      const std::string& sourceFile,
-      const std::string& codingName = ""):
-    content_(content),
-    state_(state),
-    sourceFile_(sourceFile),
-    codingName_(codingName)
+  HuffNode(size_t f, std::unique_ptr< HuffNode > l, std::unique_ptr< HuffNode > r) :
+    m_ch('\0'),
+    m_freq(f),
+    m_left(std::move(l)),
+    m_right(std::move(r))
   {}
 };
 
-struct CodingEntry {
-  HashTable< char, std::string, xx_hash > codes_;
-  std::string sourceName_;
-  size_t uniqueChars_;
-  size_t originalBits_;
-  size_t compressedBits_;
-  double entropy_;
-  HuffNode* root_;
-
-  CodingEntry():
-    codes_(64),
-    uniqueChars_(0),
-    originalBits_(0),
-    compressedBits_(0),
-    entropy_(0.0),
-    root_(nullptr)
-  {}
-  ~CodingEntry()
-  {
-    destroyTree(root_);
-  }
-
-  CodingEntry(const CodingEntry&) = delete;
-  CodingEntry& operator=(const CodingEntry&) = delete;
-
-  CodingEntry(CodingEntry&& o) noexcept:
-    codes_(std::move(o.codes_)),
-    sourceName_(std::move(o.sourceName_)),
-    uniqueChars_(o.uniqueChars_),
-    originalBits_(o.originalBits_),
-    compressedBits_(o.compressedBits_),
-    entropy_(o.entropy_),
-    root_(o.root_)
-  {
-    o.root_ = nullptr;
-  }
-
-  CodingEntry& operator=(CodingEntry&& o) noexcept
-  {
-    if (this != &o) {
-      destroyTree(root_);
-      codes_ = std::move(o.codes_);
-      sourceName_ = std::move(o.sourceName_);
-      uniqueChars_ = o.uniqueChars_;
-      originalBits_ = o.originalBits_;
-      compressedBits_ = o.compressedBits_;
-      entropy_ = o.entropy_;
-      root_ = o.root_;
-      o.root_ = nullptr;
-    }
-    return *this;
-  }
-
-private:
-
-  static void destroyTree(HuffNode* node)
-  {
-    if (!node) {
-      return;
-    }
-    destroyTree(node->left_);
-    destroyTree(node->right_);
-    delete node;
-  }
+struct NodeCmp
+{
+  bool operator()(const HuffNode * a, const HuffNode * b) const;
 };
+
+enum class TextState
+{
+  RAW,
+  ENCODED
+};
+
+struct TextEntry
+{
+  std::string m_content;
+  TextState m_state;
+  std::string m_sourceFile;
+  std::string m_codingName;
+
+  TextEntry() :
+    m_state(TextState::RAW)
+  {}
+
+  TextEntry(const std::string & content,
+            TextState state,
+            const std::string & sourceFile,
+            const std::string & codingName = "") :
+    m_content(content),
+    m_state(state),
+    m_sourceFile(sourceFile),
+    m_codingName(codingName)
+  {}
+  const std::string & getContent() const
+  {
+    return m_content;
+  }
+
+  TextState getState() const
+  {
+    return m_state;
+  }
+
+  const std::string & getSourceFile() const
+  {
+    return m_sourceFile;
+  }
+
+  const std::string & getCodingName() const
+  {
+    return m_codingName;
+  }
+
+  std::string getInfo() const;
+};
+
+struct CodingEntry
+{
+  HashTable< char, std::string, xx_hash > m_codes;
+  std::string m_sourceName;
+  size_t m_uniqueChars;
+  size_t m_originalBits;
+  size_t m_compressedBits;
+  double m_entropy;
+  std::unique_ptr< HuffNode > m_root;
+
+  CodingEntry() :
+    m_codes(CODING_HASH_CAP),
+    m_uniqueChars(0),
+    m_originalBits(0),
+    m_compressedBits(0),
+    m_entropy(0.0),
+    m_root(nullptr)
+  {}
+
+  ~CodingEntry() = default;
+
+  CodingEntry(const CodingEntry &) = delete;
+  CodingEntry & operator=(const CodingEntry &) = delete;
+
+  CodingEntry(CodingEntry && o) noexcept = default;
+  CodingEntry & operator=(CodingEntry && o) noexcept = default;
+  const HashTable< char, std::string, xx_hash > & getCodes() const
+  {
+    return m_codes;
+  }
+
+  const std::string & getSourceName() const
+  {
+    return m_sourceName;
+  }
+
+  size_t getUniqueChars() const
+  {
+    return m_uniqueChars;
+  }
+
+  size_t getOriginalBits() const
+  {
+    return m_originalBits;
+  }
+
+  size_t getCompressedBits() const
+  {
+    return m_compressedBits;
+  }
+
+  double getEntropy() const
+  {
+    return m_entropy;
+  }
+
+  const HuffNode * getRoot() const
+  {
+    return m_root.get();
+  }
+  std::string getCodesInfo() const;
+  std::string getAnalysisInfo() const;
+  std::string getComparisonInfo(const CodingEntry & other) const;
+};
+
 using TextTable = HashTable< std::string, TextEntry, xx_hash >;
-using CodingTable = HashTable< std::string, CodingEntry*, xx_hash >;
+using CodingTable = HashTable< std::string, std::unique_ptr< CodingEntry >, xx_hash >;
 
-inline HashTable< char, size_t, xx_hash > buildFreqTable(const std::string& text)
-{
-  HashTable< char, size_t, xx_hash > freq(64);
-  for (char c : text) {
-    if (freq.has(c)) {
-      ++freq.get(c);
-    } else {
-      freq.add(c, 1);
-    }
-  }
-  return freq;
-}
+HashTable< char, size_t, xx_hash > buildFreqTable(const std::string & text);
 
-inline void buildCodesHelper(HuffNode* node,
-    const std::string& prefix,
-    HashTable< char, std::string, xx_hash >& codes)
-{
-  if (!node) {
-    return;
-  }
-  if (!node->left_ && !node->right_) {
-    codes.add(node->ch_, prefix.empty() ? "0" : prefix);
-    return;
-  }
-  buildCodesHelper(node->left_, prefix + "0", codes);
-  buildCodesHelper(node->right_, prefix + "1", codes);
-}
+void buildCodesHelper(const HuffNode * node,
+                      const std::string & prefix,
+                      HashTable< char, std::string, xx_hash > & codes);
 
-inline HuffNode* buildTree(const HashTable< char, size_t, xx_hash >& freq)
-{
-  std::priority_queue< HuffNode*, std::vector< HuffNode* >, NodeCmp > pq;
-  for (const auto& p : freq) {
-    pq.push(new HuffNode(p.first, p.second));
-  }
-  if (pq.empty()) {
-    return nullptr;
-  }
-  while (pq.size() > 1) {
-    HuffNode* const l = pq.top();
-    pq.pop();
-    HuffNode* const r = pq.top();
-    pq.pop();
-    pq.push(new HuffNode(l->freq_ + r->freq_, l, r));
-  }
-  return pq.top();
-}
+std::unique_ptr< HuffNode > buildTree(const HashTable< char, size_t, xx_hash > & freq);
 
-inline double calcEntropy(const HashTable< char, size_t, xx_hash >& freq,
-    size_t total)
-{
-  double h = 0.0;
-  for (const auto& p : freq) {
-    if (p.second > 0) {
-      const double prob = static_cast< double >(p.second) / total;
-      h -= prob * (std::log(prob) / std::log(2.0));
-    }
-  }
-  return h;
-}
+double calcEntropy(const HashTable< char, size_t, xx_hash > & freq,
+                   size_t total);
+
+std::string encodeToBits(const std::string & content,
+                         const CodingEntry * const coding);
+
+std::string decodeFromBits(const std::string & encoded,
+                           const HuffNode * const root);
 
 }
 
