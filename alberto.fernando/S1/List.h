@@ -5,115 +5,68 @@
 #include <stdexcept>
 #include <utility>
 #include <limits>
+#include "Iter.h"
 
 namespace alberto {
-  template <class T> class List;
-  template <class T>
-  class Iter {
-    friend class List<T>;
-
-  public:
-    Iter() noexcept : ptr(nullptr) {}
-    Iter(const Iter&) noexcept = default;
-    T& operator*() const noexcept { return ptr->data; }
-    T* operator->() const noexcept { return &(ptr->data); }
-    Iter& operator++() noexcept {
-      ptr = ptr->next;
-      return *this;
-    }
-    Iter& operator--() noexcept {
-      ptr = ptr->prev;
-      return *this;
-    }
-    Iter operator++(int) noexcept {
-      Iter tmp = *this;
-      ptr = ptr->next;
-      return tmp;
-    }
-    Iter operator--(int) noexcept {
-      Iter tmp = *this;
-      ptr = ptr->prev;
-      return tmp;
-    }
-    bool operator==(const Iter& other) const noexcept { return ptr == other.ptr; }
-    bool operator!=(const Iter& other) const noexcept { return ptr != other.ptr; }
-
-  private:
-    typename List<T>::Elem* ptr;
-    explicit Iter(typename List<T>::Elem* p) noexcept : ptr(p) {}
-  };
-
-  template <class T>
-  class CIter {
-    friend class List<T>;
-
-  public:
-    CIter() noexcept : ptr(nullptr) {}
-    CIter(const CIter&) noexcept = default;
-    const T& operator*() const noexcept { return ptr->data; }
-    const T* operator->() const noexcept { return &(ptr->data); }
-    CIter& operator++() noexcept {
-      ptr = ptr->next;
-      return *this;
-    }
-    CIter& operator--() noexcept {
-      ptr = ptr->prev;
-      return *this;
-    }
-    CIter operator++(int) noexcept {
-      CIter tmp = *this;
-      ptr = ptr->next;
-      return tmp;
-    }
-    CIter operator--(int) noexcept {
-      CIter tmp = *this;
-      ptr = ptr->prev;
-      return tmp;
-    }
-    bool operator==(const CIter& other) const noexcept { return ptr == other.ptr; }
-    bool operator!=(const CIter& other) const noexcept { return ptr != other.ptr; }
-
-  private:
-    const typename List<T>::Elem* ptr;
-    explicit CIter(const typename List<T>::Elem* p) noexcept : ptr(p) {}
-  };
-
- template <class T>
+  template < class T >
   class List {
   public:
     struct Elem {
-      T data;
-      Elem* next;
-      Elem* prev;
-      explicit Elem(const T& val, Elem* nxt = nullptr, Elem* prv = nullptr)
-        : data(val), next(nxt), prev(prv) {}
-      explicit Elem(T&& val, Elem* nxt = nullptr, Elem* prv = nullptr)
-        : data(std::move(val)), next(nxt), prev(prv) {}
+      T data_;
+      Elem* next_;
+      Elem* prev_;
+
+      explicit Elem(const T& val, Elem* nxt = nullptr, Elem* prv = nullptr) :
+        data_(val),
+        next_(nxt),
+        prev_(prv)
+      {}
+
+      explicit Elem(T&& val, Elem* nxt = nullptr, Elem* prv = nullptr) :
+        data_(std::move(val)),
+        next_(nxt),
+        prev_(prv)
+      {}
     };
 
   private:
-    Elem* head;
-    Elem* tail;
-    size_t sz;
-public:
-    List() noexcept : head(nullptr), tail(nullptr), sz(0) {}
+    Elem* head_;
+    Elem* tail_;
+    size_t sz_;
+  public:
+    List() noexcept :
+      head_(nullptr),
+      tail_(nullptr),
+      sz_(0)
+    {}
 
-    ~List() { clear(); }
-
-    List(const List& other) : head(nullptr), tail(nullptr), sz(0) {
-      for (Elem* curr = other.head; curr != nullptr; curr = curr->next) {
-        push_back(curr->data);
+    List(const List& other) :
+      head_(nullptr),
+      tail_(nullptr),
+      sz_(0)
+    {
+      for (Elem* curr = other.head_; curr != nullptr; curr = curr->next_) {
+        push_back(curr->data_);
       }
     }
 
-    List(List&& other) noexcept
-      : head(other.head), tail(other.tail), sz(other.sz) {
-      other.head = nullptr;
-      other.tail = nullptr;
-      other.sz = 0;
+    List(List&& other) noexcept :
+      head_(other.head_),
+      tail_(other.tail_),
+      sz_(other.sz_)
+    {
+      other.head_ = nullptr;
+      other.tail_ = nullptr;
+      other.sz_ = 0;
     }
 
-    List& operator=(const List& other) {
+    ~List()
+    {
+      clear();
+    }
+
+    List& operator=(const List& other)
+    {
       if (this != &other) {
         List tmp(other);
         swap(tmp);
@@ -121,221 +74,353 @@ public:
       return *this;
     }
 
-    List& operator=(List&& other) noexcept {
-      if (this != &other) {
-        clear();
-        head = other.head;
-        tail = other.tail;
-        sz = other.sz;
-        other.head = nullptr;
-        other.tail = nullptr;
-        other.sz = 0;
-      }
+    List& operator=(List&& other) noexcept
+    {
+      List tmp(std::move(other));
+      swap(tmp);
       return *this;
     }
 
-    void swap(List& other) noexcept {
-      std::swap(head, other.head);
-      std::swap(tail, other.tail);
-      std::swap(sz, other.sz);
-    }
-Iter<T> begin() noexcept { return Iter<T>(head); }
-    Iter<T> end() noexcept { return Iter<T>(nullptr); }
-    CIter<T> begin() const noexcept { return CIter<T>(head); }
-    CIter<T> end() const noexcept { return CIter<T>(nullptr); }
-    CIter<T> cbegin() const noexcept { return CIter<T>(head); }
-    CIter<T> cend() const noexcept { return CIter<T>(nullptr); }
-
-    bool empty() const noexcept { return sz == 0; }
-    size_t size() const noexcept { return sz; }
-
-    T& front() {
-      if (empty()) throw std::out_of_range("Empty list");
-      return head->data;
+    void swap(List& other) noexcept
+    {
+      std::swap(head_, other.head_);
+      std::swap(tail_, other.tail_);
+      std::swap(sz_, other.sz_);
     }
 
-    const T& front() const {
-      if (empty()) throw std::out_of_range("Empty list");
-      return head->data;
+    bool empty() const noexcept
+    {
+      return sz_ == 0;
     }
 
-    T& back() {
-      if (empty()) throw std::out_of_range("Empty list");
-      return tail->data;
+    size_t size() const noexcept
+    {
+      return sz_;
     }
 
-    const T& back() const {
-      if (empty()) throw std::out_of_range("Empty list");
-      return tail->data;
-    }
-
-    T& operator[](size_t index) {
-      if (index >= sz) throw std::out_of_range("Invalid index");
-      Elem* curr = head;
-      for (size_t i = 0; i < index; ++i) {
-        curr = curr->next;
+    void clear()
+    {
+      while (!empty()) {
+        pop_front();
       }
-      return curr->data;
     }
-
-    const T& operator[](size_t index) const {
-      if (index >= sz) throw std::out_of_range("Invalid index");
-      Elem* curr = head;
-      for (size_t i = 0; i < index; ++i) {
-        curr = curr->next;
+    T& front()
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
       }
-      return curr->data;
+      return head_->data_;
     }
-void push_front(const T& value) {
-      Elem* novo = new Elem(value, head, nullptr);
-      if (empty()) tail = novo;
-      else head->prev = novo;
-      head = novo;
-      sz++;
+
+    const T& front() const
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return head_->data_;
     }
-    void push_front(T&& value) {
-      Elem* novo = new Elem(std::move(value), head, nullptr);
-      if (empty()) tail = novo;
-      else head->prev = novo;
-      head = novo;
-      sz++;
+
+    T& back()
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return tail_->data_;
     }
-    void pop_front() {
-      if (empty()) return;
-      Elem* temp = head;
-      head = head->next;
-      if (head) head->prev = nullptr;
-      else tail = nullptr;
+
+    const T& back() const
+    {
+      if (empty()) {
+        throw std::out_of_range("Empty list");
+      }
+      return tail_->data_;
+    }
+
+    T& operator[](size_t index)
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      Elem* curr = head_;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next_;
+      }
+      return curr->data_;
+    }
+
+    const T& operator[](size_t index) const
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      Elem* curr = head_;
+      for (size_t i = 0; i < index; ++i) {
+        curr = curr->next_;
+      }
+      return curr->data_;
+    }
+
+    Iter< T > begin() noexcept
+    {
+      return Iter< T >(head_);
+    }
+
+    Iter< T > end() noexcept
+    {
+      return Iter< T >(nullptr);
+    }
+
+    CIter< T > begin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > end() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
+
+    CIter< T > cbegin() const noexcept
+    {
+      return CIter< T >(head_);
+    }
+
+    CIter< T > cend() const noexcept
+    {
+      return CIter< T >(nullptr);
+    }
+    void push_front(const T& value)
+    {
+      Elem* novo = new Elem(value, head_, nullptr);
+      if (empty()) {
+        tail_ = novo;
+      } else {
+        head_->prev_ = novo;
+      }
+      head_ = novo;
+      sz_++;
+    }
+
+    void push_front(T&& value)
+    {
+      Elem* novo = new Elem(std::move(value), head_, nullptr);
+      if (empty()) {
+        tail_ = novo;
+      } else {
+        head_->prev_ = novo;
+      }
+      head_ = novo;
+      sz_++;
+    }
+
+    void pop_front()
+    {
+      if (empty()) {
+        return;
+      }
+      Elem* temp = head_;
+      head_ = head_->next_;
+      if (head_) {
+        head_->prev_ = nullptr;
+      } else {
+        tail_ = nullptr;
+      }
       delete temp;
-      sz--;
-    }
-    void push_back(const T& value) {
-      Elem* novo = new Elem(value, nullptr, tail);
-      if (empty()) head = novo;
-      else tail->next = novo;
-      tail = novo;
-      sz++;
+      sz_--;
     }
 
-    void push_back(T&& value) {
-      Elem* novo = new Elem(std::move(value), nullptr, tail);
-      if (empty()) head = novo;
-      else tail->next = novo;
-      tail = novo;
-      sz++;
+    void push_back(const T& value)
+    {
+      Elem* novo = new Elem(value, nullptr, tail_);
+      if (empty()) {
+        head_ = novo;
+      } else {
+        tail_->next_ = novo;
+      }
+      tail_ = novo;
+      sz_++;
     }
 
-    void pop_back() {
-      if (empty()) return;
-      Elem* temp = tail;
-      tail = tail->prev;
-      if (tail) tail->next = nullptr;
-      else head = nullptr;
+    void push_back(T&& value)
+    {
+      Elem* novo = new Elem(std::move(value), nullptr, tail_);
+      if (empty()) {
+        head_ = novo;
+      } else {
+        tail_->next_ = novo;
+      }
+      tail_ = novo;
+      sz_++;
+    }
+
+    void pop_back()
+    {
+      if (empty()) {
+        return;
+      }
+      Elem* temp = tail_;
+      tail_ = tail_->prev_;
+      if (tail_) {
+        tail_->next_ = nullptr;
+      } else {
+        head_ = nullptr;
+      }
       delete temp;
-      sz--;
+      sz_--;
     }
-void insert(size_t index, const T& value) {
-      if (index > sz) throw std::out_of_range("Invalid index");
-      if (index == 0) { push_front(value); return; }
-      if (index == sz) { push_back(value); return; }
-
-      Elem* atual = head;
-      for (size_t i = 0; i < index; ++i) atual = atual->next;
-
-      Elem* anterior = atual->prev;
+    void insert(size_t index, const T& value)
+    {
+      if (index > sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        push_front(value);
+        return;
+      }
+      if (index == sz_) {
+        push_back(value);
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
       Elem* novo = new Elem(value, atual, anterior);
-      anterior->next = novo;
-      atual->prev = novo;
-      sz++;
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
     }
 
-    void insert(size_t index, T&& value) {
-      if (index > sz) throw std::out_of_range("Invalid index");
-      if (index == 0) { push_front(std::move(value)); return; }
-      if (index == sz) { push_back(std::move(value)); return; }
-
-      Elem* atual = head;
-      for (size_t i = 0; i < index; ++i) atual = atual->next;
-      Elem* anterior = atual->prev;
+    void insert(size_t index, T&& value)
+    {
+      if (index > sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        push_front(std::move(value));
+        return;
+      }
+      if (index == sz_) {
+        push_back(std::move(value));
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
       Elem* novo = new Elem(std::move(value), atual, anterior);
-      anterior->next = novo;
-      atual->prev = novo;
-      sz++;
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
     }
-Iter<T> insert(Iter<T> pos, const T& value) {
-      if (pos == begin()) { push_front(value); return begin(); }
-      if (pos == end()) { push_back(value); return Iter<T>(tail); }
 
+    Iter< T > insert(Iter< T > pos, const T& value)
+    {
+      if (pos == begin()) {
+        push_front(value);
+        return begin();
+      }
+      if (pos == end()) {
+        push_back(value);
+        return Iter< T >(tail_);
+      }
       Elem* atual = pos.ptr;
-      Elem* anterior = atual->prev;
+      Elem* anterior = atual->prev_;
       Elem* novo = new Elem(value, atual, anterior);
-      anterior->next = novo;
-      atual->prev = novo;
-      sz++;
-      return Iter<T>(novo);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+      return Iter< T >(novo);
     }
 
-    Iter<T> insert(Iter<T> pos, T&& value) {
-      if (pos == begin()) { push_front(std::move(value)); return begin(); }
-      if (pos == end()) { push_back(std::move(value)); return Iter<T>(tail); }
-
+    Iter< T > insert(Iter< T > pos, T&& value)
+    {
+      if (pos == begin()) {
+        push_front(std::move(value));
+        return begin();
+      }
+      if (pos == end()) {
+        push_back(std::move(value));
+        return Iter< T >(tail_);
+      }
       Elem* atual = pos.ptr;
-      Elem* anterior = atual->prev;
+      Elem* anterior = atual->prev_;
       Elem* novo = new Elem(std::move(value), atual, anterior);
-      anterior->next = novo;
-      atual->prev = novo;
-      sz++;
-      return Iter<T>(novo);
+      anterior->next_ = novo;
+      atual->prev_ = novo;
+      sz_++;
+      return Iter< T >(novo);
     }
-void erase(size_t index) {
-      if (index >= sz) throw std::out_of_range("Invalid index");
-      if (index == 0) { pop_front(); return; }
-      if (index == sz - 1) { pop_back(); return; }
 
-      Elem* atual = head;
-      for (size_t i = 0; i < index; ++i) atual = atual->next;
-
-      Elem* anterior = atual->prev;
-      Elem* proximo = atual->next;
-      anterior->next = proximo;
-      proximo->prev = anterior;
+    void erase(size_t index)
+    {
+      if (index >= sz_) {
+        throw std::out_of_range("Invalid index");
+      }
+      if (index == 0) {
+        pop_front();
+        return;
+      }
+      if (index == sz_ - 1) {
+        pop_back();
+        return;
+      }
+      Elem* atual = head_;
+      for (size_t i = 0; i < index; ++i) {
+        atual = atual->next_;
+      }
+      Elem* anterior = atual->prev_;
+      Elem* proximo = atual->next_;
+      anterior->next_ = proximo;
+      proximo->prev_ = anterior;
       delete atual;
-      sz--;
+      sz_--;
     }
 
-    Iter<T> erase(Iter<T> pos) {
-      if (empty() || pos == end())
+    Iter< T > erase(Iter< T > pos)
+    {
+      if (empty() || pos == end()) {
         throw std::out_of_range("Invalid position");
-
-      if (pos == begin()) { pop_front(); return begin(); }
-      if (pos.ptr == tail) { pop_back(); return end(); }
-
+      }
+      if (pos == begin()) {
+        pop_front();
+        return begin();
+      }
+      if (pos.ptr == tail_) {
+        pop_back();
+        return end();
+      }
       Elem* atual = pos.ptr;
-      Elem* anterior = atual->prev;
-      Elem* proximo = atual->next;
-      anterior->next = proximo;
-      proximo->prev = anterior;
+      Elem* anterior = atual->prev_;
+      Elem* proximo = atual->next_;
+      anterior->next_ = proximo;
+      proximo->prev_ = anterior;
       delete atual;
-      sz--;
-      return Iter<T>(proximo);
+      sz_--;
+      return Iter< T >(proximo);
     }
-void clear() {
-      while (!empty()) pop_front();
-    }
-    void reverse() {
-      if (sz <= 1) return;
-      Elem* left = head;
-      Elem* right = tail;
-      for (size_t i = 0; i < sz / 2; ++i) {
-        std::swap(left->data, right->data);
-        left = left->next;
-        right = right->prev;
+
+    void reverse()
+    {
+      if (sz_ <= 1) {
+        return;
+      }
+      Elem* left = head_;
+      Elem* right = tail_;
+      for (size_t i = 0; i < sz_ / 2; ++i) {
+        std::swap(left->data_, right->data_);
+        left = left->next_;
+        right = right->prev_;
       }
     }
   };
-template <class T>
-  inline void sum(T& a, const T& b) {
-    if (std::numeric_limits<T>::max() - b < a) {
+
+  template < class T >
+  inline void sum(T& a, const T& b)
+  {
+    if (std::numeric_limits< T >::max() - b < a) {
       throw std::overflow_error("Overflow");
     }
     a += b;
